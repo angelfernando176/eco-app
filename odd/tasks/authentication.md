@@ -61,6 +61,7 @@ App móvil:
 - Crear `apps/web/.env` con las credenciales.
 - **Aplicar las migraciones desde el SQL Editor (decisión del usuario):** ejecutar
   `supabase/migrations/0001_init.sql` y luego `0002_auth.sql`, en orden.
+  ✅ **Aplicadas correctamente en la nube** (confirmado por el usuario).
 
 ## Commits
 - `8937cc6` refactor(supabase): move ECO schema out of public
