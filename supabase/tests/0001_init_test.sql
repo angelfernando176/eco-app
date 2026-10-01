@@ -1,8 +1,13 @@
 -- 0001_init_test.sql — tests pgTAP para el esquema base de ECO.
 -- Requiere la extensión pgtap. Ejecutar con: supabase test db
+--
+-- IMPORTANTE: apunta al esquema "ECO". El esquema "public" pertenece a otro
+-- proyecto y no se lee ni se modifica.
 
 begin;
 select plan(11);
+
+set search_path to ECO, extensions;
 
 -- datos base
 insert into users (first_name, last_name, age_range, type, email)
