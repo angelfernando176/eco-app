@@ -1,0 +1,19 @@
+{
+  "name": "eco",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ECO — aplicación para buscar negocios registrados (web/escritorio + móvil)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "web": "npm run dev --workspace @eco/web",
+    "mobile": "npm run start --workspace @eco/mobile",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
