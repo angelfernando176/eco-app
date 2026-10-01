@@ -59,7 +59,8 @@ App móvil:
 - Exponer el esquema `ECO` en Settings → API → *Exposed schemas*.
 - Auth → Email: habilitar *Confirm email*; fijar Site URL y Redirect URLs.
 - Crear `apps/web/.env` con las credenciales.
-- Aplicar las migraciones (CLI `supabase db push` o SQL Editor).
+- **Aplicar las migraciones desde el SQL Editor (decisión del usuario):** ejecutar
+  `supabase/migrations/0001_init.sql` y luego `0002_auth.sql`, en orden.
 
 ## Commits
 - `8937cc6` refactor(supabase): move ECO schema out of public
@@ -69,4 +70,11 @@ App móvil:
 - `7e579db` docs(supabase): document ECO schema and dashboard setup
 
 ## Review nativa (RDD)
-<!-- resultado del review, pendiente -->
+- Lineage: `review-7b65ed26630551a3` (creada) · tier **high** · 4 lenses
+  (`review-risk`, `review-resilience`, `review-readability`, `review-reliability`)
+  · 13 archivos · budget 200.
+- Estado: **detenida por timeout** — `operation_timeout` (context deadline exceeded),
+  `retry_safe: false`, `next_action: stop`, `manual_action_required`.
+- **Decisión del usuario: diferir el review al pull request** (no se reintenta ahora).
+- Nota: `package-lock.json` (~9k líneas) infló el diff (13 309 líneas) y probablemente
+  contribuyó al agotamiento del presupuesto de tiempo.
