@@ -7,11 +7,12 @@ Implementar la autenticación del proyecto ECO según el prompt original, con al
 - UI web de login/registro.
 - Onboarding móvil (primer/segundo acceso).
 
-## Esquema: `ECO` (decisión crítica)
-Todo el modelo de datos vive en el esquema **`ECO`**. El esquema **`public` pertenece a
-OTRO proyecto** y **no debe leerse ni modificarse** bajo ninguna circunstancia. Las
-migraciones y los tests fueron reescritos para apuntar únicamente a `ECO`, con GRANTs
-propios (`anon`, `authenticated`, `service_role`) sobre `ECO`.
+## Esquema: `eco` (decisión crítica)
+Todo el modelo de datos vive en el esquema **`eco`** (PostgreSQL pliega a minúsculas;
+PostgREST es case-sensitive). El esquema **`public` pertenece a OTRO proyecto** y
+**no debe leerse ni modificarse** bajo ninguna circunstancia. Las migraciones y los
+tests fueron reescritos para apuntar únicamente a `eco`, con GRANTs propios (`anon`,
+`authenticated`, `service_role`) sobre `eco`.
 
 ## Spec (del prompt original, sección Autenticación)
 Común a Administrador y Usuario web/escritorio:

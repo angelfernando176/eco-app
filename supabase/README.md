@@ -3,12 +3,14 @@
 Supabase/PostgreSQL es el backend y almacenamiento central del proyecto. Aquí viven
 las migraciones del esquema.
 
-## Esquema: `ECO` (importante)
+## Esquema: `eco` (importante)
 
-Todo el modelo de datos de ECO vive en el esquema **`ECO`**. El esquema
-**`public` pertenece a OTRO proyecto** y **no debe leerse ni modificarse** bajo
-ninguna circunstancia. Las migraciones solo crean objetos en `ECO` y otorgan
-permisos únicamente sobre `ECO`.
+Todo el modelo de datos de ECO vive en el esquema **`eco`**. PostgreSQL pliega
+los identificadores sin comillas a minúsculas, por lo que el esquema físico es
+`eco` (minúsculas) aunque conceptualmente se lo llame ECO; PostgREST es
+case-sensitive y usa `eco`. El esquema **`public` pertenece a OTRO proyecto** y
+**no debe leerse ni modificarse** bajo ninguna circunstancia. Las migraciones solo
+crean objetos en `eco` y otorgan permisos únicamente sobre `eco`.
 
 ## Migraciones
 
@@ -40,8 +42,8 @@ supabase db push
 
 ## Configuración requerida en el dashboard
 
-1. **Exponer el esquema `ECO`** en la API: Settings → API → *Exposed schemas* →
-   agregar `ECO` (mantener `public` para el otro proyecto).
+1. **Exponer el esquema `eco`** en la API: Settings → API → *Exposed schemas* →
+   agregar `eco` (mantener `public` para el otro proyecto).
 2. **Autenticación**: Auth → Providers → Email → habilitar *Confirm email*; fijar
    *Site URL* y las *Redirect URLs* de la app web (para confirmación y recuperación).
 3. **Rol administrador**: asignarlo vía SQL (no hay registro público como admin):
@@ -62,7 +64,7 @@ VITE_SUPABASE_URL=https://jtrrqbnxhxxqjcpizjuy.supabase.co
 VITE_SUPABASE_ANON_KEY=<anon/publishable key>
 ```
 
-El cliente (`apps/web/src/lib/supabase.ts`) apunta al esquema `ECO` explícitamente.
+El cliente (`apps/web/src/lib/supabase.ts`) apunta al esquema `eco` explícitamente.
 
 ## Storage (imágenes y videos)
 
