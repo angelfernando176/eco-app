@@ -25,4 +25,4 @@ sin agregar funcionalidades fuera del spec (`odd/spec.md`, regla de alcance).
 - [ ] Revisión visual en navegador (pendiente, la hace el usuario en http://localhost:5173)
 
 ## Commits
-(pendiente)
+- `1658bac` feat(web): add reusable style system and UI components
