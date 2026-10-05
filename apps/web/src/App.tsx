@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase, isSupabaseConfigured } from './lib/supabase'
 import AuthScreen from './auth/AuthScreen'
+import { Alert, Button } from './ui'
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -22,39 +23,58 @@ export default function App() {
 
   if (!isSupabaseConfigured) {
     return (
-      <main>
-        <h1>ECO</h1>
-        <p>Faltan las credenciales de Supabase (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY).</p>
-      </main>
+      <div className="page">
+        <header className="page__header">
+          <span className="page__brand">ECO</span>
+        </header>
+        <main className="page__main page__main--centered">
+          <div className="page__content">
+            <Alert tone="error">
+              Faltan las credenciales de Supabase (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY).
+            </Alert>
+          </div>
+        </main>
+      </div>
     )
   }
 
   if (loading) {
     return (
-      <main>
-        <h1>ECO</h1>
-        <p>Cargando…</p>
-      </main>
+      <div className="page">
+        <header className="page__header">
+          <span className="page__brand">ECO</span>
+        </header>
+        <main className="page__main page__main--centered">
+          <div className="stack stack--sm stack--center">
+            <span className="spinner spinner--lg" aria-hidden="true" />
+            <p>Cargando…</p>
+          </div>
+        </main>
+      </div>
     )
   }
 
   if (session) {
     return (
-      <main>
-        <h1>ECO</h1>
-        <p>
-          Sesión iniciada como <strong>{session.user.email}</strong>.
-        </p>
-        <button onClick={() => supabase!.auth.signOut()}>Cerrar sesión</button>
-      </main>
+      <div className="page">
+        <header className="page__header">
+          <span className="page__brand">ECO</span>
+          <Button variant="secondary" onClick={() => supabase!.auth.signOut()}>
+            Cerrar sesión
+          </Button>
+        </header>
+        <main className="page__main page__main--centered">
+          <div className="page__content">
+            <div className="card">
+              <p>
+                Sesión iniciada como <strong>{session.user.email}</strong>.
+              </p>
+            </div>
+          </div>
+        </main>
+      </div>
     )
   }
 
-  return (
-    <main>
-      <h1>ECO</h1>
-      <p>Buscá negocios registrados.</p>
-      <AuthScreen />
-    </main>
-  )
+  return <AuthScreen />
 }

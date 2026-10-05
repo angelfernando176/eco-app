@@ -1,9 +1,35 @@
 import { useState, type FormEvent } from 'react'
 import { supabase } from '../lib/supabase'
+import { Alert, AuthLayout, Button, Field } from '../ui'
 
 type View = 'signin' | 'signup' | 'forgot' | 'confirm'
 
 const AGE_RANGES = ['18-24', '25-34', '35-44', '45-54', '55-64', '65+']
+
+const VIEW_TITLES: Record<View, string> = {
+  signin: 'Iniciar sesión',
+  signup: 'Crear cuenta',
+  forgot: 'Recuperar credenciales',
+  confirm: 'Confirmá tu cuenta',
+}
+
+interface EmailFieldProps {
+  value: string
+  onChange: (value: string) => void
+}
+
+function EmailField({ value, onChange }: EmailFieldProps) {
+  return (
+    <Field
+      label="Correo electrónico"
+      type="email"
+      autoComplete="email"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      required
+    />
+  )
+}
 
 /**
  * Autenticación web/escritorio (Administrador y Usuario web/escritorio):
@@ -74,84 +100,104 @@ export default function AuthScreen() {
 
   if (view === 'confirm') {
     return (
-      <section>
-        <h2>Confirmá tu cuenta</h2>
-        <p>{notice ?? 'Te enviamos un correo de confirmación.'}</p>
-        <button onClick={() => resetTo('signin')}>Volver a iniciar sesión</button>
-      </section>
+      <AuthLayout title={VIEW_TITLES.confirm}>
+        <div className="stack">
+          <Alert tone="info">{notice ?? 'Te enviamos un correo de confirmación.'}</Alert>
+          <Button variant="secondary" block onClick={() => resetTo('signin')}>
+            Volver a iniciar sesión
+          </Button>
+        </div>
+      </AuthLayout>
     )
   }
 
+  const subtitle = view === 'signin' ? 'Buscá negocios registrados.' : undefined
+
   return (
-    <section>
-      {view === 'signin' && (
-        <form onSubmit={handleSignIn}>
-          <h2>Iniciar sesión</h2>
-          <label>
-            Correo electrónico
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          </label>
-          <label>
-            Contraseña
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-          </label>
-          <button type="submit" disabled={busy}>{busy ? 'Ingresando…' : 'Ingresar'}</button>
-          <p>
-            <button type="button" onClick={() => resetTo('signup')}>Crear cuenta</button>
-            {' · '}
-            <button type="button" onClick={() => resetTo('forgot')}>Olvidé mi contraseña</button>
-          </p>
-        </form>
-      )}
+    <AuthLayout title={VIEW_TITLES[view]} subtitle={subtitle}>
+      <div className="stack">
+        {view === 'signin' && (
+          <form className="stack" onSubmit={handleSignIn}>
+            <EmailField value={email} onChange={setEmail} />
+            <Field
+              label="Contraseña"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <Button type="submit" block loading={busy}>
+              {busy ? 'Ingresando…' : 'Ingresar'}
+            </Button>
+            <div className="cluster">
+              <Button type="button" variant="link" onClick={() => resetTo('signup')}>
+                Crear cuenta
+              </Button>
+              <Button type="button" variant="link" onClick={() => resetTo('forgot')}>
+                Olvidé mi contraseña
+              </Button>
+            </div>
+          </form>
+        )}
 
-      {view === 'signup' && (
-        <form onSubmit={handleSignUp}>
-          <h2>Crear cuenta</h2>
-          <label>
-            Nombre
-            <input value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
-          </label>
-          <label>
-            Apellido
-            <input value={lastName} onChange={(e) => setLastName(e.target.value)} required />
-          </label>
-          <label>
-            Correo electrónico
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          </label>
-          <label>
-            Rango de edad
-            <select value={ageRange} onChange={(e) => setAgeRange(e.target.value)}>
-              {AGE_RANGES.map((r) => <option key={r} value={r}>{r}</option>)}
-            </select>
-          </label>
-          <label>
-            Contraseña
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
-          </label>
-          <button type="submit" disabled={busy}>{busy ? 'Creando…' : 'Registrarme'}</button>
-          <p>
-            <button type="button" onClick={() => resetTo('signin')}>Ya tengo cuenta</button>
-          </p>
-        </form>
-      )}
+        {view === 'signup' && (
+          <form className="stack" onSubmit={handleSignUp}>
+            <Field
+              label="Nombre"
+              autoComplete="given-name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+            />
+            <Field
+              label="Apellido"
+              autoComplete="family-name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+            />
+            <EmailField value={email} onChange={setEmail} />
+            <Field as="select" label="Rango de edad" value={ageRange} onChange={(e) => setAgeRange(e.target.value)}>
+              {AGE_RANGES.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </Field>
+            <Field
+              label="Contraseña"
+              type="password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+            />
+            <Button type="submit" block loading={busy}>
+              {busy ? 'Creando…' : 'Registrarme'}
+            </Button>
+            <Button type="button" variant="link" onClick={() => resetTo('signin')}>
+              Ya tengo cuenta
+            </Button>
+          </form>
+        )}
 
-      {view === 'forgot' && (
-        <form onSubmit={handleForgot}>
-          <h2>Recuperar credenciales</h2>
-          <label>
-            Correo electrónico
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          </label>
-          <button type="submit" disabled={busy}>{busy ? 'Enviando…' : 'Enviar enlace'}</button>
-          <p>
-            <button type="button" onClick={() => resetTo('signin')}>Volver a iniciar sesión</button>
-          </p>
-        </form>
-      )}
+        {view === 'forgot' && (
+          <form className="stack" onSubmit={handleForgot}>
+            <EmailField value={email} onChange={setEmail} />
+            <Button type="submit" block loading={busy}>
+              {busy ? 'Enviando…' : 'Enviar enlace'}
+            </Button>
+            <Button type="button" variant="link" onClick={() => resetTo('signin')}>
+              Volver a iniciar sesión
+            </Button>
+          </form>
+        )}
 
-      {error && <p role="alert">{error}</p>}
-      {notice && <p role="status">{notice}</p>}
-    </section>
+        {error && <Alert tone="error">{error}</Alert>}
+        {notice && <Alert tone="info">{notice}</Alert>}
+      </div>
+    </AuthLayout>
   )
 }
