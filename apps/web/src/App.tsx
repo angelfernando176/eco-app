@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase, isSupabaseConfigured } from './lib/supabase'
 import AuthScreen from './auth/AuthScreen'
-import { Alert, Button } from './ui'
+import AppShell from './features/shell/AppShell'
+import { Alert } from './ui'
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -55,25 +56,7 @@ export default function App() {
   }
 
   if (session) {
-    return (
-      <div className="page">
-        <header className="page__header">
-          <span className="page__brand">ECO</span>
-          <Button variant="secondary" onClick={() => supabase!.auth.signOut()}>
-            Cerrar sesión
-          </Button>
-        </header>
-        <main className="page__main page__main--centered">
-          <div className="page__content">
-            <div className="card">
-              <p>
-                Sesión iniciada como <strong>{session.user.email}</strong>.
-              </p>
-            </div>
-          </div>
-        </main>
-      </div>
-    )
+    return <AppShell session={session} />
   }
 
   return <AuthScreen />

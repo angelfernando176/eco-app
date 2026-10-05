@@ -23,11 +23,13 @@ y pantalla maestro-detalle con pestañas, implementando la pestaña **Informaci�
 - Cliente: esquema `eco`; PostgREST case-sensitive.
 
 ## Tareas
-- [ ] Capa de datos (`apps/web/src/lib`/`features`): perfil+rol+suscripción, API de negocios
-- [ ] Primitivas UI: DataTable, Pagination, Tabs, ConfirmDialog, PageHeader (+ CSS en `styles/`)
-- [ ] Shell autenticado + listado de negocios (búsqueda por campo, paginación, borrar)
-- [ ] Maestro-detalle: formulario Información (crear/editar) con validaciones
-- [ ] Verificación (typecheck + build); prueba manual del usuario
+- [x] Capa de datos (`apps/web/src/lib`/`features`): perfil+rol+suscripción, API de negocios
+- [x] Primitivas UI: DataTable, Pagination, Tabs, ConfirmDialog, PageHeader (+ CSS en `styles/`)
+- [x] Shell autenticado + listado de negocios (búsqueda por campo, paginación, borrar)
+- [x] Maestro-detalle: formulario Información (crear/editar) con validaciones
+- [x] Verificación: typecheck + build OK
+- [ ] Prueba manual del usuario contra Supabase real
 
 ## Commits
-(pendiente)
+- `3906ef8` feat(web): add businesses data layer and table/tabs/dialog primitives
+- feat(web): add authenticated shell and business management screens
