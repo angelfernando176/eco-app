@@ -24,7 +24,7 @@
 - [x] Migración `0005_mobile.sql` + tests pgTAP + prueba real en Postgres (Docker)
 - [x] Base móvil: dependencias, cliente Supabase, SQLite (ingreso/búsquedas/calificaciones), sincronización, tema
 - [x] Onboarding con sincronización real (Continuar) y reintentos
-- [ ] Búsqueda: ubicación, radio, texto, mapa y lista de resultados
+- [x] Búsqueda: ubicación, radio, texto, mapa y lista de resultados
 - [ ] Ficha del negocio (Mapa, Videos, Ranking, Menú, Contacto, Calificar)
 - [ ] Verificación: typecheck, bundle de Expo, pruebas de lógica pura y de BD
 
