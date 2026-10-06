@@ -33,3 +33,22 @@ y pantalla maestro-detalle con pestañas, implementando la pestaña **Informaci�
 ## Commits
 - `3906ef8` feat(web): add businesses data layer and table/tabs/dialog primitives
 - feat(web): add authenticated shell and business management screens
+
+## Iteración 2 — Validaciones del formulario (feedback de prueba manual)
+Prueba manual: los negocios SÍ se crean. Reglas pedidas por el usuario:
+- Nombre comercial: 3–10 caracteres.
+- RUC: solo dígitos, 10–13.
+- Teléfono: máx. 30 caracteres, mín. 8 dígitos.
+- Correo: validación estándar.
+- Latitud/Longitud: rangos propios; ayuda "¿?" que abre un modal explicando cómo
+  obtenerlas desde Google Maps.
+- Calle principal y secundaria: 3–100 caracteres.
+- Número: 3–15 caracteres.
+- Referencia: 3–300 caracteres, `textarea` amplio.
+- Nota: el usuario existente es admin; el usuario creará una cuenta normal para pruebas.
+
+Tareas:
+- [ ] Reglas puras de validación actualizadas (`rules.ts`) + límites compartidos
+- [ ] Componentes UI: `Field` con textarea/maxLength/contador, `Modal` de ayuda
+- [ ] Formulario con restricciones de entrada y ayuda de coordenadas
+- [ ] Verificación typecheck + build
