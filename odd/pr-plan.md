@@ -1,4 +1,4 @@
-# ECO — Plan de Pull Requests (cadena de 5 PR)
+# ECO — Plan de Pull Requests (cadena de 6 PR)
 
 > Preparado localmente. **No hay remoto configurado** (`git remote -v` vacío) ni `gh` instalado:
 > nada se subió ni se abrió. Para publicar: agregar el remoto, `git push` de cada rama y abrir
@@ -19,8 +19,9 @@ siguiente PR a `master`.
 | 3 | `feat/web-businesses` | `feat/web-ui-foundation` | +1991 / −24 | 26 |
 | 4 | `feat/web-catalog` | `feat/web-businesses` | +2298 / −19 | 30 |
 | 5 | `feat/web-users` | `feat/web-catalog` | +1765 / −10 | 25 |
+| 6 | `feat/mobile-app` | `feat/web-users` | +4046 / −181 | 48 |
 
-Total acumulado: ~7.9k líneas de código y docs. Los commits siguen Conventional Commits.
+Total acumulado: ~12k líneas de código y docs. Los commits siguen Conventional Commits.
 
 ## Qué no está verificado (aplica a los 5 PR)
 
@@ -101,7 +102,7 @@ Total acumulado: ~7.9k líneas de código y docs. Los commits siguen Conventiona
 
 **Título:** `feat: user management, subscription activation and email via edge functions`
 
-1 → 2 → 3 → 4 → 📍 **5**
+1 → 2 → 3 → 4 → 📍 **5** → 6
 
 **Resumen**
 - Gestión de usuarios (Administrador): listado, edición, borrado lógico y Activar suscripción.
@@ -115,3 +116,25 @@ destinatario y contenido solo de la base. Ningún secreto está en el repo.
 **Fuera de alcance:** móvil (sincronización, ratings, búsqueda con mapa).
 **Depende de:** PR 4. **Acción previa:** cargar secretos y desplegar funciones
 (`supabase/functions/README.md`). **No probado** de punta a punta (sin Deno ni envío real).
+
+## PR 6 — `feat/mobile-app` → `feat/web-users`
+
+**Título:** `feat(mobile): sync, radius search with map, business detail and ratings`
+
+1 → 2 → 3 → 4 → 5 → 📍 **6**
+
+**Resumen**
+- Migración `0005`: RPC `register_mobile_user` y `submit_rating` (anon, validadas en servidor), lectura de ratings
+  por RPC sin ids; la tabla `ratings` deja de ser pública (solo admin y dueño).
+- App móvil: cliente Supabase, SQLite con migraciones (ingreso, búsquedas, calificaciones), sincronización con cola
+  tolerante a fallos, onboarding con sincronización real.
+- Búsqueda por ubicación actual, radio 5/10/20/50/100 km, texto sobre nombre y skills, mapa y lista.
+- Ficha del negocio: Mapa, Videos, Ranking, Menú, Contacto y Calificar (offline-first).
+- Harness Docker (`supabase/tests/harness/run.sh`) y tests pgTAP 0004/0005; corrige 4 tests de `0002` mal escritos.
+
+**Fuera de alcance:** login móvil, notificaciones, una calificación por usuario/negocio (no está en el spec).
+**Depende de:** PR 5. **Acción previa:** aplicar `0005`; crear `apps/mobile/.env` con `EXPO_PUBLIC_SUPABASE_URL`,
+`EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_ECO_WEB_URL` y `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY`.
+**Verificación:** typecheck, build web, bundle Android y 79 pruebas de BD OK. **No verificado:** dispositivo/emulador,
+Supabase real, mapa/video/ubicación, correos.
+**Riesgo conocido:** `register_mobile_user` y `submit_rating` no tienen límite de frecuencia (posible spam).

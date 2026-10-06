@@ -26,7 +26,7 @@
 - [x] Onboarding con sincronización real (Continuar) y reintentos
 - [x] Búsqueda: ubicación, radio, texto, mapa y lista de resultados
 - [x] Ficha del negocio (Mapa, Videos, Ranking, Menú, Contacto, Calificar)
-- [ ] Verificación: typecheck, bundle de Expo, pruebas de lógica pura y de BD
+- [x] Verificación: typecheck, bundle de Expo, pruebas de lógica pura y de BD
 
 ## Commits
 (pendiente)
@@ -38,3 +38,16 @@
   la fila ajena al `SELECT` del `INSERT…SELECT`, `DELETE` sin política filtra en vez de lanzar error, el trigger de
   límite corre antes que RLS, y el test 11 contradecía la regla de plan de `0004`. Se corrigieron los tests; las políticas no tenían defecto.
 - Riesgo conocido: `register_mobile_user` y `submit_rating` son invocables por `anon` sin límite de frecuencia (spam posible).
+
+## Verificación final (ejecutada)
+- `npm run typecheck` (mobile, web, shared): 0 errores. `npm run build --workspace @eco/web`: OK.
+- `expo export --platform android`: bundle OK (677 módulos).
+- Base de datos en Docker: 79 pruebas OK, 0 fallos (0001, 0002, 0004, 0005).
+- Lógica pura (throwaway tsx): geo 22/22, sync 27/27 (+6 de rechazo permanente), detalle 20/20.
+- Barrido de secretos en el repo: sin credenciales.
+- **No verificado:** ejecución en dispositivo/emulador; consultas reales a Supabase (búsqueda por caja delimitadora,
+  skills, RPC de ranking); mapa, video y ubicación reales; envío de correos; Edge Functions con Deno.
+
+## Commits
+- `7e59469` tracker · `b1a289c` migración 0005 + harness Docker · `d4097a5` base móvil + sync
+- `737bf8d` búsqueda con mapa · `c73c688` ficha del negocio
