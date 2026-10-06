@@ -38,6 +38,9 @@ supabase db push
 - `handle_new_user` + trigger `on_auth_user_created` (crea el perfil al registrarse).
 - Helpers de autorización (`is_admin`, `current_user_id`, `owns_business`,
   `has_active_subscription`, `can_manage_catalog`).
+
+`0003_admin_business_limit.sql` exime al Administrador del límite de 1 negocio sin
+suscripción (`enforce_businesses_limit` consulta `eco.is_admin()`). Aplicar después de `0002`.
 - Row Level Security habilitado con políticas por rol.
 
 ## Configuración requerida en el dashboard
