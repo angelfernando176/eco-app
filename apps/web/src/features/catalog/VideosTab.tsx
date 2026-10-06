@@ -121,7 +121,7 @@ export default function VideosTab({ business, plan }: BusinessTabProps) {
             {videos.map((video) => (
               <div key={video.id} className="card video-card">
                 {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-                <video className="video-card__player" src={video.url} preload="metadata" />
+                <video className="video-card__player" controls src={video.url} preload="metadata" />
                 <p className="video-card__product">{productName(video.productId)}</p>
               </div>
             ))}
