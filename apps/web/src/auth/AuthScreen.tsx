@@ -1,10 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { supabase } from '../lib/supabase'
 import { Alert, AuthLayout, Button, Field } from '../ui'
+import { AGE_RANGES } from '../features/users/ageRanges'
 
 type View = 'signin' | 'signup' | 'forgot' | 'confirm'
-
-const AGE_RANGES = ['18-24', '25-34', '35-44', '45-54', '55-64', '65+']
 
 const VIEW_TITLES: Record<View, string> = {
   signin: 'Iniciar sesión',

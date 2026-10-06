@@ -17,9 +17,9 @@ tipo (1 = web/escritorio, 2 = móvil), correo. Paginación, búsqueda por campo,
 - **Correo de activación**: requiere servidor (Edge Function + proveedor de correo). Decisión pendiente.
 
 ## Tareas
-- [ ] Capa de datos (listUsers con filtros/paginación, update, soft-delete, activar suscripción)
-- [ ] Shell con navegación + listado de usuarios
-- [ ] Edición de usuario + Activar suscripción (+ estado de suscripción)
+- [x] Capa de datos (listUsers con filtros/paginación, update, soft-delete, activar suscripción)
+- [x] Shell con navegación + listado de usuarios
+- [x] Edición de usuario + Activar suscripción (+ estado de suscripción)
 - [ ] Crear usuario y correo de activación (según decisión)
 - [ ] Verificación (typecheck + build); prueba manual
 

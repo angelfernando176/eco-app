@@ -1,4 +1,28 @@
-/* Authenticated shell header */
+/* Authenticated shell header: section nav (Negocios | Usuarios) */
+.shell__nav {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.shell__nav-tab {
+  border: none;
+  background: none;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-gray-600);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.shell__nav-tab:hover {
+  background: var(--color-gray-100);
+}
+
+.shell__nav-tab--active {
+  background: var(--color-brand-100);
+  color: var(--color-brand-800);
+}
+
 .shell__user {
   flex: 1;
   justify-content: center;
@@ -45,4 +69,11 @@
   flex-direction: column;
   align-items: flex-end;
   gap: var(--space-1);
+}
+
+/* Standalone filter controls above a DataTable that aren't per-column text filters (e.g. type select) */
+.list-page__filter-bar {
+  display: flex;
+  gap: var(--space-4);
+  max-width: 16rem;
 }
