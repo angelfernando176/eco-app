@@ -31,7 +31,7 @@ tipo (1 = web/escritorio, 2 = móvil), correo. Paginación, búsqueda por campo,
 ## Decisiones — crear usuario y correos
 - `smart-api` pertenece a **LINGO** (confirmación LOPDP sobre `public.usuarios`, no envía correos):
   NO se reutiliza ni se pisa. ECO usa funciones propias con otro nombre.
-- Proveedor de correo: **Resend** (secretos `RESEND_API_KEY`, `MAIL_FROM`, `SITE_URL`).
+- Proveedor de correo: intercambiable con `EMAIL_PROVIDER` (`smtp` | `resend`). Temporal: Gmail por SMTP (contraseña de aplicación cargada solo como secreto de Supabase, nunca en el repo); luego la cuenta corporativa cambiando solo secretos.
 - `eco-admin-create-user`: valida JWT + claim admin; `auth.admin.generateLink({type:'invite'})` crea la
   cuenta (el trigger crea `eco.users`, type=1) y devuelve el enlace; el correo lo envía la función vía Resend.
 - `eco-notify-subscription`: solo recibe `userId`; verifica admin y que la suscripción esté activa en BD;

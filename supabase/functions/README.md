@@ -16,7 +16,7 @@ Helpers comunes, importados con rutas relativas (no se despliegan como función)
 - `auth.ts` — `requireAdmin(req)` (valida el JWT y el claim `app_metadata.role = 'admin'`)
   y `adminClient()` (cliente con la service role, esquema `eco`).
 - `http.ts` — `json(status, body)`, `HttpError`, `errorResponse(error)`.
-- `email.ts` — `sendEmail({ to, subject, html, text })` vía Resend; nunca lanza, devuelve
+- `email.ts` — `sendEmail({ to, subject, html, text })` vía SMTP o Resend (según `EMAIL_PROVIDER`); nunca lanza, devuelve
   `{ ok: true } | { ok: false, error }`. También expone `escapeHtml`.
 - `templates.ts` — plantillas puras (`accountInvitationTemplate`, `subscriptionActivatedTemplate`)
   con branding ECO (verde `#059669`), HTML responsive simple y texto plano.
@@ -86,10 +86,25 @@ Inyectados automáticamente por Supabase en cada función: `SUPABASE_URL`,
 
 | Secreto | Descripción |
 | --- | --- |
-| `RESEND_API_KEY` | API key de [Resend](https://resend.com). |
-| `MAIL_FROM` | Remitente verificado, ej. `ECO <noreply@tu-dominio.com>`. |
+| `EMAIL_PROVIDER` | `smtp` o `resend` (por defecto `resend`). |
+| `MAIL_FROM` | Remitente, ej. `ECO <cuenta@gmail.com>`. Con Gmail el remitente real siempre es la cuenta autenticada. |
 | `SITE_URL` | URL pública de la app web (link de invitación y de "Ir a ECO"). |
 | `ALLOWED_ORIGIN` | (opcional) origen permitido para CORS; por defecto `*`. |
+
+Proveedor `smtp` (Gmail temporal, Google Workspace, Microsoft 365, etc.):
+
+| Secreto | Descripción |
+| --- | --- |
+| `SMTP_HOST` | Ej. `smtp.gmail.com`. |
+| `SMTP_PORT` | `465` (TLS implícito, por defecto) o `587` (STARTTLS). El puerto 25 está bloqueado en Edge Functions. |
+| `SMTP_USER` | Usuario de la cuenta de correo. |
+| `SMTP_PASS` | Contraseña. En Gmail es una **contraseña de aplicación** (requiere verificación en dos pasos). |
+
+Proveedor `resend`: `RESEND_API_KEY` (API key de [Resend](https://resend.com)).
+
+> **Nunca** escribas `SMTP_PASS` ni `RESEND_API_KEY` en archivos del repositorio. Se cargan solo
+> como secretos de Supabase. Para pasar de Gmail a la cuenta corporativa basta con cambiar
+> `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` y `MAIL_FROM`; el código no cambia.
 
 ## Despliegue
 
@@ -98,7 +113,9 @@ Con la CLI de Supabase instalada:
 ```bash
 supabase link --project-ref jtrrqbnxhxxqjcpizjuy
 
-supabase secrets set RESEND_API_KEY=... MAIL_FROM="ECO <noreply@tu-dominio.com>" SITE_URL=https://tu-app.com
+supabase secrets set EMAIL_PROVIDER=smtp SMTP_HOST=smtp.gmail.com SMTP_PORT=465 \
+  SMTP_USER=<cuenta> SMTP_PASS=<contraseña-de-aplicación> \
+  MAIL_FROM="ECO <cuenta@gmail.com>" SITE_URL=https://tu-app.com
 
 supabase functions deploy eco-admin-create-user
 supabase functions deploy eco-notify-subscription
@@ -109,7 +126,15 @@ Supabase** (Edge Functions → Create function) pegando el contenido de
 `index.ts` y los archivos de `_shared/`, y configurando los secretos en
 Project Settings → Edge Functions → Secrets.
 
-## Nota sobre Resend
+## Notas sobre Gmail (uso temporal)
+
+- Usá una cuenta dedicada a ECO, con verificación en dos pasos y contraseña de aplicación.
+- Límite aproximado de 500 correos por día; los mensajes pueden caer en spam al no salir de un
+  dominio propio con SPF/DKIM.
+- Se recomienda el puerto **465**. El 587 usa STARTTLS y no pudo verificarse en este entorno.
+- Si la contraseña de aplicación se expuso, revocala en la cuenta de Google y generá otra.
+
+## Notas sobre Resend
 
 - Hay que verificar un dominio o remitente en Resend antes de producción.
 - Mientras se prueba sin dominio verificado, el remitente de prueba
