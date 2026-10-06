@@ -1,8 +1,9 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import type { Business, User } from '@eco/shared'
-import { Alert, Button, Field } from '../../ui'
+import { Alert, Button, Field, Modal } from '../../ui'
 import { createBusiness, listWebUsers, updateBusiness } from './api'
-import { validateBusinessInput, type BusinessFieldErrors } from './rules'
+import { BUSINESS_FIELD_LIMITS } from './limits'
+import { parseCoordinate, validateBusinessInput, type BusinessFieldErrors } from './rules'
 import type { BusinessInput, WebUserOption } from './types'
 
 interface FormState {
@@ -69,6 +70,7 @@ export default function BusinessForm({ profile, isAdmin, business, onCreated, on
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null)
+  const [coordsHelpOpen, setCoordsHelpOpen] = useState(false)
 
   const showOwnerPicker = isAdmin && isCreate
 
@@ -96,6 +98,10 @@ export default function BusinessForm({ profile, isAdmin, business, onCreated, on
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
+  function handleRucChange(event: ChangeEvent<HTMLInputElement>) {
+    setField('ruc', event.target.value.replace(/\D/g, ''))
+  }
+
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setSubmitError(null)
@@ -106,8 +112,8 @@ export default function BusinessForm({ profile, isAdmin, business, onCreated, on
       ruc: form.ruc,
       phone: form.phone,
       representativeEmail: form.representativeEmail,
-      latitude: form.latitude.trim() === '' ? Number.NaN : Number(form.latitude),
-      longitude: form.longitude.trim() === '' ? Number.NaN : Number(form.longitude),
+      latitude: parseCoordinate(form.latitude),
+      longitude: parseCoordinate(form.longitude),
       mainStreet: form.mainStreet,
       secondaryStreet: form.secondaryStreet,
       number: form.number,
@@ -184,13 +190,16 @@ export default function BusinessForm({ profile, isAdmin, business, onCreated, on
             value={form.tradeName}
             onChange={(e) => setField('tradeName', e.target.value)}
             error={fieldErrors.tradeName}
+            maxLength={BUSINESS_FIELD_LIMITS.tradeName.max}
             required
           />
           <Field
             label="RUC"
             value={form.ruc}
-            onChange={(e) => setField('ruc', e.target.value)}
+            onChange={handleRucChange}
             error={fieldErrors.ruc}
+            inputMode="numeric"
+            maxLength={BUSINESS_FIELD_LIMITS.ruc.max}
             required
           />
           <Field
@@ -198,6 +207,7 @@ export default function BusinessForm({ profile, isAdmin, business, onCreated, on
             value={form.phone}
             onChange={(e) => setField('phone', e.target.value)}
             error={fieldErrors.phone}
+            maxLength={BUSINESS_FIELD_LIMITS.phone.max}
             required
           />
           <Field
@@ -206,6 +216,7 @@ export default function BusinessForm({ profile, isAdmin, business, onCreated, on
             value={form.representativeEmail}
             onChange={(e) => setField('representativeEmail', e.target.value)}
             error={fieldErrors.representativeEmail}
+            maxLength={BUSINESS_FIELD_LIMITS.representativeEmail.max}
             required
           />
         </div>
@@ -214,29 +225,40 @@ export default function BusinessForm({ profile, isAdmin, business, onCreated, on
       <section className="form-section">
         <h3 className="form-section__title">Ubicación</h3>
         <div className="form-grid">
-          <Field
-            label="Latitud"
-            type="number"
-            step="any"
-            value={form.latitude}
-            onChange={(e) => setField('latitude', e.target.value)}
-            error={fieldErrors.latitude}
-            required
-          />
-          <Field
-            label="Longitud"
-            type="number"
-            step="any"
-            value={form.longitude}
-            onChange={(e) => setField('longitude', e.target.value)}
-            error={fieldErrors.longitude}
-            required
-          />
+          <div className="coords-row field--full-width">
+            <Field
+              label="Latitud"
+              value={form.latitude}
+              onChange={(e) => setField('latitude', e.target.value)}
+              error={fieldErrors.latitude}
+              inputMode="decimal"
+              placeholder="-0.180653"
+              required
+            />
+            <Field
+              label="Longitud"
+              value={form.longitude}
+              onChange={(e) => setField('longitude', e.target.value)}
+              error={fieldErrors.longitude}
+              inputMode="decimal"
+              placeholder="-78.467834"
+              required
+            />
+            <button
+              type="button"
+              className="coords-help-trigger"
+              aria-label="¿Cómo obtener la latitud y longitud?"
+              onClick={() => setCoordsHelpOpen(true)}
+            >
+              ¿?
+            </button>
+          </div>
           <Field
             label="Calle principal"
             value={form.mainStreet}
             onChange={(e) => setField('mainStreet', e.target.value)}
             error={fieldErrors.mainStreet}
+            maxLength={BUSINESS_FIELD_LIMITS.mainStreet.max}
             required
           />
           <Field
@@ -244,6 +266,7 @@ export default function BusinessForm({ profile, isAdmin, business, onCreated, on
             value={form.secondaryStreet}
             onChange={(e) => setField('secondaryStreet', e.target.value)}
             error={fieldErrors.secondaryStreet}
+            maxLength={BUSINESS_FIELD_LIMITS.secondaryStreet.max}
             required
           />
           <Field
@@ -251,17 +274,40 @@ export default function BusinessForm({ profile, isAdmin, business, onCreated, on
             value={form.number}
             onChange={(e) => setField('number', e.target.value)}
             error={fieldErrors.number}
+            maxLength={BUSINESS_FIELD_LIMITS.number.max}
             required
           />
-          <Field
-            label="Referencia"
-            value={form.reference}
-            onChange={(e) => setField('reference', e.target.value)}
-            error={fieldErrors.reference}
-            required
-          />
+          <div className="field--full-width">
+            <Field
+              as="textarea"
+              label="Referencia"
+              value={form.reference}
+              onChange={(e) => setField('reference', e.target.value)}
+              error={fieldErrors.reference}
+              maxLength={BUSINESS_FIELD_LIMITS.reference.max}
+              showCounter
+              rows={5}
+              required
+            />
+          </div>
         </div>
       </section>
+
+      <Modal open={coordsHelpOpen} title="¿Cómo obtener la latitud y longitud?" onClose={() => setCoordsHelpOpen(false)}>
+        <p>
+          Abrí Google Maps y hacé clic derecho (o mantené presionado en el celular) sobre el lugar exacto del
+          negocio.
+        </p>
+        <p>
+          En el menú que aparece, tocá las coordenadas que se muestran arriba (por ejemplo{' '}
+          <strong>-0.180653, -78.467834</strong>) para copiarlas.
+        </p>
+        <p>
+          El primer número es la <strong>latitud</strong> y el segundo es la <strong>longitud</strong>. Pegá cada
+          uno en su campo correspondiente.
+        </p>
+        <p>Las coordenadas usan formato de grados decimales (por ejemplo, con punto o coma como separador).</p>
+      </Modal>
 
       {submitError && <Alert tone="error">{submitError}</Alert>}
       {submitSuccess && <Alert tone="success">{submitSuccess}</Alert>}

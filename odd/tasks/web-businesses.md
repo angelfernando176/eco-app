@@ -48,7 +48,7 @@ Prueba manual: los negocios SÍ se crean. Reglas pedidas por el usuario:
 - Nota: el usuario existente es admin; el usuario creará una cuenta normal para pruebas.
 
 Tareas:
-- [ ] Reglas puras de validación actualizadas (`rules.ts`) + límites compartidos
-- [ ] Componentes UI: `Field` con textarea/maxLength/contador, `Modal` de ayuda
-- [ ] Formulario con restricciones de entrada y ayuda de coordenadas
-- [ ] Verificación typecheck + build
+- [x] Reglas puras de validación actualizadas (`rules.ts`) + límites compartidos
+- [x] Componentes UI: `Field` con textarea/maxLength/contador, `Modal` de ayuda
+- [x] Formulario con restricciones de entrada y ayuda de coordenadas
+- [x] Verificación typecheck + build

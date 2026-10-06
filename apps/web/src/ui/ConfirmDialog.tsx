@@ -47,7 +47,7 @@ export default function ConfirmDialog({
   if (!open) return null
 
   return (
-    <dialog ref={dialogRef} className="confirm-dialog" aria-labelledby="confirm-dialog-title">
+    <dialog ref={dialogRef} className="dialog-surface confirm-dialog" aria-labelledby="confirm-dialog-title">
       <h2 id="confirm-dialog-title" className="confirm-dialog__title">
         {title}
       </h2>

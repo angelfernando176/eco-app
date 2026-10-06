@@ -18,3 +18,40 @@
   grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
   gap: var(--space-4);
 }
+
+.field--full-width {
+  grid-column: 1 / -1;
+}
+
+.coords-row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.coords-row > .field {
+  flex: 1 1 10rem;
+}
+
+.coords-help-trigger {
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-gray-300);
+  background: white;
+  color: var(--color-gray-700);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.coords-help-trigger:hover {
+  background: var(--color-gray-100);
+}
+
+.coords-help-trigger:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}

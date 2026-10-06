@@ -172,6 +172,17 @@
   color: var(--color-danger-600);
 }
 
+.field__counter {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  align-self: flex-end;
+}
+
+.field__control[rows] {
+  resize: vertical;
+  font-family: inherit;
+}
+
 /* Card */
 .card {
   background: white;
