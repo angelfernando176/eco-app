@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Business, User } from '@eco/shared'
 import { Alert, Button, PageHeader, Tabs, type TabItem } from '../../ui'
+import MenuTab from '../catalog/MenuTab'
 import SkillsTab from '../catalog/SkillsTab'
 import { getPlanLimits } from '../plan/rules'
 import { getBusiness } from './api'
@@ -60,7 +61,12 @@ export default function BusinessDetailPage({
 
   const tabs: TabItem[] = [
     { id: 'info', label: 'Información' },
-    { id: 'menu', label: 'Menú', disabled: true, disabledHint: COMING_SOON_HINT },
+    {
+      id: 'menu',
+      label: 'Menú',
+      disabled: isCreate,
+      disabledHint: isCreate ? CREATE_FIRST_HINT : undefined,
+    },
     { id: 'videos', label: 'Videos', disabled: true, disabledHint: COMING_SOON_HINT },
     {
       id: 'skills',
@@ -105,6 +111,7 @@ export default function BusinessDetailPage({
               onUpdated={(updated) => setBusiness(updated)}
             />
           )}
+          {activeTab === 'menu' && business && <MenuTab business={business} plan={plan} isAdmin={isAdmin} />}
           {activeTab === 'skills' && business && <SkillsTab business={business} plan={plan} isAdmin={isAdmin} />}
         </Tabs>
       )}
