@@ -105,6 +105,12 @@ los límites de negocio (`skills`, `negocios`, `imágenes`, `videos`), el trigge
 `0002_auth_test.sql` verifica `handle_new_user`, los helpers de autorización y el
 RLS por rol (dueño, autenticado sin perfil y administrador).
 
+## Edge Functions
+
+Las operaciones que requieren la service role (crear cuentas de usuario web/escritorio y
+enviar el correo de activación de suscripción) viven en `supabase/functions/`. Ver
+`supabase/functions/README.md` para detalle de cada función, secretos y despliegue.
+
 ## Pendiente antes de producción
 
 - Sincronización SQLite (móvil) → Supabase y política de `ratings` para el móvil.
