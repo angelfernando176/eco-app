@@ -1,7 +1,9 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import type { Business, User } from '@eco/shared'
 import { Alert, Button, Field, Modal } from '../../ui'
+import type { PlanLimits } from '../plan/limits'
 import { createBusiness, listWebUsers, updateBusiness } from './api'
+import LogoUploader from './LogoUploader'
 import { BUSINESS_FIELD_LIMITS } from './limits'
 import { parseCoordinate, validateBusinessInput, type BusinessFieldErrors } from './rules'
 import type { BusinessInput, WebUserOption } from './types'
@@ -51,12 +53,13 @@ function toFormState(business: Business | null): FormState {
 interface BusinessFormProps {
   profile: User
   isAdmin: boolean
+  plan: PlanLimits
   business: Business | null
   onCreated: (business: Business) => void
   onUpdated: (business: Business) => void
 }
 
-export default function BusinessForm({ profile, isAdmin, business, onCreated, onUpdated }: BusinessFormProps) {
+export default function BusinessForm({ profile, isAdmin, plan, business, onCreated, onUpdated }: BusinessFormProps) {
   const isCreate = business === null
   const [form, setForm] = useState<FormState>(() => toFormState(business))
   const [fieldErrors, setFieldErrors] = useState<BusinessFieldErrors>({})
@@ -292,6 +295,15 @@ export default function BusinessForm({ profile, isAdmin, business, onCreated, on
           </div>
         </div>
       </section>
+
+      {business ? (
+        <LogoUploader business={business} plan={plan} onChanged={onUpdated} />
+      ) : (
+        <section className="form-section">
+          <h3 className="form-section__title">Logo</h3>
+          <span className="field__hint">Guardá el negocio para poder cargar el logo.</span>
+        </section>
+      )}
 
       <Modal open={coordsHelpOpen} title="¿Cómo obtener la latitud y longitud?" onClose={() => setCoordsHelpOpen(false)}>
         <p>

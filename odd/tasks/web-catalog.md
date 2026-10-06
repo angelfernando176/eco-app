@@ -21,8 +21,8 @@
 
 ## Tareas
 - [x] Migración `0004_catalog_limits_storage.sql` (límites, RLS de productos, bucket+policies) + docs
-- [ ] Capa de datos del catálogo + rules por plan + helper de subida a Storage; límites de negocios 1/7
-- [ ] Pestaña Skills + logo en Información
+- [x] Capa de datos del catálogo + rules por plan + helper de subida a Storage; límites de negocios 1/7
+- [x] Pestaña Skills + logo en Información
 - [ ] Pestaña Menú (productos + imágenes)
 - [ ] Pestaña Videos
 - [ ] Verificación (typecheck + build); prueba manual del usuario

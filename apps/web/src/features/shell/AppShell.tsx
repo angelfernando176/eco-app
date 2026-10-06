@@ -74,6 +74,7 @@ export default function AppShell({ session }: AppShellProps) {
           <BusinessDetailPage
             profile={profile}
             isAdmin={isAdmin}
+            hasActiveSubscription={hasActiveSubscription}
             businessId={view.businessId}
             onBack={() => setView({ screen: 'list' })}
           />

@@ -1,26 +1,29 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Business, User } from '@eco/shared'
 import { Alert, Button, PageHeader, Tabs, type TabItem } from '../../ui'
+import SkillsTab from '../catalog/SkillsTab'
+import { getPlanLimits } from '../plan/rules'
 import { getBusiness } from './api'
 import BusinessForm from './BusinessForm'
 
 const COMING_SOON_HINT = 'Disponible próximamente'
-
-const TABS: TabItem[] = [
-  { id: 'info', label: 'Información' },
-  { id: 'menu', label: 'Menú', disabled: true, disabledHint: COMING_SOON_HINT },
-  { id: 'videos', label: 'Videos', disabled: true, disabledHint: COMING_SOON_HINT },
-  { id: 'skills', label: 'Skills', disabled: true, disabledHint: COMING_SOON_HINT },
-]
+const CREATE_FIRST_HINT = 'Guardá el negocio para habilitar esta pestaña.'
 
 interface BusinessDetailPageProps {
   profile: User
   isAdmin: boolean
+  hasActiveSubscription: boolean
   businessId: string | null
   onBack: () => void
 }
 
-export default function BusinessDetailPage({ profile, isAdmin, businessId, onBack }: BusinessDetailPageProps) {
+export default function BusinessDetailPage({
+  profile,
+  isAdmin,
+  hasActiveSubscription,
+  businessId,
+  onBack,
+}: BusinessDetailPageProps) {
   const [currentId, setCurrentId] = useState<string | null>(businessId)
   const [activeTab, setActiveTab] = useState('info')
   const [business, setBusiness] = useState<Business | null>(null)
@@ -53,6 +56,19 @@ export default function BusinessDetailPage({ profile, isAdmin, businessId, onBac
   }, [currentId])
 
   const isCreate = currentId === null
+  const plan = useMemo(() => getPlanLimits({ isAdmin, hasActiveSubscription }), [isAdmin, hasActiveSubscription])
+
+  const tabs: TabItem[] = [
+    { id: 'info', label: 'Información' },
+    { id: 'menu', label: 'Menú', disabled: true, disabledHint: COMING_SOON_HINT },
+    { id: 'videos', label: 'Videos', disabled: true, disabledHint: COMING_SOON_HINT },
+    {
+      id: 'skills',
+      label: 'Skills',
+      disabled: isCreate,
+      disabledHint: isCreate ? CREATE_FIRST_HINT : undefined,
+    },
+  ]
 
   return (
     <div className="page__content page__content--wide">
@@ -75,11 +91,12 @@ export default function BusinessDetailPage({ profile, isAdmin, businessId, onBac
       {!loading && loadError && <Alert tone="error">{loadError}</Alert>}
 
       {!loading && !loadError && (
-        <Tabs tabs={TABS} activeId={activeTab} onChange={setActiveTab}>
+        <Tabs tabs={tabs} activeId={activeTab} onChange={setActiveTab}>
           {activeTab === 'info' && (
             <BusinessForm
               profile={profile}
               isAdmin={isAdmin}
+              plan={plan}
               business={business}
               onCreated={(created) => {
                 setCurrentId(created.id)
@@ -88,6 +105,7 @@ export default function BusinessDetailPage({ profile, isAdmin, businessId, onBac
               onUpdated={(updated) => setBusiness(updated)}
             />
           )}
+          {activeTab === 'skills' && business && <SkillsTab business={business} plan={plan} isAdmin={isAdmin} />}
         </Tabs>
       )}
     </div>
