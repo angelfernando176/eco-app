@@ -129,6 +129,19 @@ Moderna, clara y responsive, diferenciando interfaces y permisos por rol.
 
 ---
 
+## 3b. Reglas por plan (decisión posterior del usuario — PREVALECE sobre §3 donde difiera)
+
+| | Administrador | Sin suscripción | Con suscripción activa |
+|---|---|---|---|
+| Negocios | sin restricción | 1 | hasta 7 |
+| Logo | sí | no | sí |
+| Menú | sin restricción | 1 producto (sin imágenes) | hasta 7 productos, hasta 7 imágenes c/u |
+| Videos | sin restricción | no permitido | hasta 2 por negocio |
+| Skills | sin restricción | 1 | hasta 10 |
+
+Con suscripción puede volver a cargar y eliminar imágenes/videos. El Administrador es
+único y equivale a la suscripción más alta. Detalle y supuestos: `odd/tasks/web-catalog.md`.
+
 ## 4. Modelo de datos (esquema `eco`)
 
 Tablas (en `supabase/migrations/0001_init.sql`):

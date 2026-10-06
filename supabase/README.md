@@ -41,6 +41,16 @@ supabase db push
 
 `0003_admin_business_limit.sql` exime al Administrador del límite de 1 negocio sin
 suscripción (`enforce_businesses_limit` consulta `eco.is_admin()`). Aplicar después de `0002`.
+
+`0004_catalog_limits_storage.sql` (aplicar después de `0003`, desde el SQL Editor):
+
+- Límites por plan (el Administrador queda exento): negocios 1/7, productos 1/7,
+  imágenes por producto 7, videos por negocio 2 (solo con suscripción), skills 1/10.
+- RLS de `products`: el dueño gestiona sus productos (tope por trigger); principal/secundario
+  solo el Administrador (`guard_product_flags`).
+- Storage: bucket público `eco-media` (50 MB, imágenes y video) con rutas
+  `logos|products|videos/<business_id>/<archivo>`; escritura solo para el administrador o el
+  dueño con suscripción activa (`can_write_media`).
 - Row Level Security habilitado con políticas por rol.
 
 ## Configuración requerida en el dashboard
