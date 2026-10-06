@@ -92,6 +92,50 @@
   align-items: flex-start;
 }
 
+/* Videos tab */
+.videos-tab__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.videos-tab__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: var(--space-3);
+}
+
+.video-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.video-card__player {
+  width: 100%;
+  max-width: 100%;
+  border-radius: var(--radius-md);
+  background: var(--color-gray-900);
+}
+
+.video-card__product {
+  color: var(--color-gray-600);
+  font-size: var(--font-size-sm);
+}
+
+.video-card__actions {
+  flex-wrap: wrap;
+}
+
+.videos-tab__add {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+
 .checkbox-field {
   display: inline-flex;
   align-items: center;

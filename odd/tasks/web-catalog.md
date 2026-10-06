@@ -24,8 +24,13 @@
 - [x] Capa de datos del catálogo + rules por plan + helper de subida a Storage; límites de negocios 1/7
 - [x] Pestaña Skills + logo en Información
 - [x] Pestaña Menú (productos + imágenes)
-- [ ] Pestaña Videos
-- [ ] Verificación (typecheck + build); prueba manual del usuario
+- [x] Pestaña Videos
+- [x] Verificación: typecheck + build OK
+- [ ] Prueba manual del usuario (requiere aplicar 0004)
 
 ## Commits
-(pendiente)
+- `11bcb3c` migración 0004
+- `b79402b` capa de datos, plan y storage
+- `4afef4c` skills + logo
+- `515698d` menú
+- feat(web): add videos tab

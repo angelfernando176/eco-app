@@ -3,11 +3,11 @@ import type { Business, User } from '@eco/shared'
 import { Alert, Button, PageHeader, Tabs, type TabItem } from '../../ui'
 import MenuTab from '../catalog/MenuTab'
 import SkillsTab from '../catalog/SkillsTab'
+import VideosTab from '../catalog/VideosTab'
 import { getPlanLimits } from '../plan/rules'
 import { getBusiness } from './api'
 import BusinessForm from './BusinessForm'
 
-const COMING_SOON_HINT = 'Disponible próximamente'
 const CREATE_FIRST_HINT = 'Guardá el negocio para habilitar esta pestaña.'
 
 interface BusinessDetailPageProps {
@@ -67,7 +67,12 @@ export default function BusinessDetailPage({
       disabled: isCreate,
       disabledHint: isCreate ? CREATE_FIRST_HINT : undefined,
     },
-    { id: 'videos', label: 'Videos', disabled: true, disabledHint: COMING_SOON_HINT },
+    {
+      id: 'videos',
+      label: 'Videos',
+      disabled: isCreate,
+      disabledHint: isCreate ? CREATE_FIRST_HINT : undefined,
+    },
     {
       id: 'skills',
       label: 'Skills',
@@ -112,6 +117,7 @@ export default function BusinessDetailPage({
             />
           )}
           {activeTab === 'menu' && business && <MenuTab business={business} plan={plan} isAdmin={isAdmin} />}
+          {activeTab === 'videos' && business && <VideosTab business={business} plan={plan} isAdmin={isAdmin} />}
           {activeTab === 'skills' && business && <SkillsTab business={business} plan={plan} isAdmin={isAdmin} />}
         </Tabs>
       )}
