@@ -1,6 +1,6 @@
 /** Single source of truth for business form field limits (used by both validation and input maxLength). */
 export const BUSINESS_FIELD_LIMITS = {
-  tradeName: { min: 3, max: 10 },
+  tradeName: { min: 3, max: 100 },
   ruc: { min: 10, max: 13 },
   phone: { minDigits: 8, max: 30 },
   representativeEmail: { max: 254 },

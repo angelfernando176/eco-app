@@ -52,3 +52,10 @@ Tareas:
 - [x] Componentes UI: `Field` con textarea/maxLength/contador, `Modal` de ayuda
 - [x] Formulario con restricciones de entrada y ayuda de coordenadas
 - [x] Verificación typecheck + build
+
+## Iteración 3 — Admin sin límite de negocios + nombre comercial 3–100
+- Causa: el trigger `enforce_businesses_limit` evaluaba solo la suscripción del dueño; el
+  admin (que es dueño de su propio perfil web) quedaba limitado a 1 negocio.
+- Fix: migración `0003_admin_business_limit.sql` (exime a `eco.is_admin()`); aplicada por el usuario en el SQL Editor.
+- Nombre comercial: máximo corregido de 10 a 100 (`limits.ts`).
+- Nota: los triggers de skills/imágenes/videos no se tocaron.
