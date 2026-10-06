@@ -49,8 +49,9 @@ function sanitizeFilterValue(value: string): string {
 }
 
 function mapSupabaseError(error: { message: string }): Error {
-  if (error.message.includes('business limit exceeded')) {
-    return new Error('Sin suscripción activa solo podés tener 1 negocio.')
+  const limitMatch = error.message.match(/business limit exceeded \(max (\d+)\)/)
+  if (limitMatch) {
+    return new Error(`Alcanzaste el límite de ${limitMatch[1]} negocio(s) de tu plan.`)
   }
   return new Error(error.message)
 }

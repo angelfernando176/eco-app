@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Business, User } from '@eco/shared'
 import { Alert, Button, ConfirmDialog, DataTable, PageHeader, Pagination, type DataTableColumn } from '../../ui'
+import { getPlanLimits } from '../plan/rules'
 import { countOwnedBusinesses, deleteBusiness, listBusinesses } from './api'
 import { canCreateBusiness, canDeleteBusiness } from './rules'
 import type { SearchableField } from './types'
@@ -125,6 +126,7 @@ export default function BusinessListPage({
   }, [isAdmin, profile.id, reloadVersion])
 
   const canCreate = canCreateBusiness({ isAdmin, hasActiveSubscription, ownedCount })
+  const businessLimit = getPlanLimits({ isAdmin, hasActiveSubscription }).businesses
 
   function updateFilter(field: SearchableField, value: string) {
     setFilterInputs((prev) => ({ ...prev, [field]: value }))
@@ -163,8 +165,8 @@ export default function BusinessListPage({
             <Button type="button" onClick={onCreate} disabled={!canCreate}>
               Crear negocio
             </Button>
-            {!canCreate && (
-              <span className="field__hint">Sin suscripción activa solo podés tener 1 negocio.</span>
+            {!canCreate && businessLimit !== null && (
+              <span className="field__hint">Alcanzaste el límite de {businessLimit} negocio(s) de tu plan.</span>
             )}
           </div>
         }

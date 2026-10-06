@@ -1,3 +1,4 @@
+import { getPlanLimits, isUnderLimit } from '../plan/rules'
 import { BUSINESS_FIELD_LIMITS } from './limits'
 import type { BusinessInput } from './types'
 
@@ -7,10 +8,10 @@ export interface CanCreateBusinessParams {
   ownedCount: number
 }
 
-/** Admin: unlimited. Web user: active subscription, or fewer than 1 owned business. */
+/** Admin: unlimited. Web user: 1 business without a subscription, 7 with an active one. */
 export function canCreateBusiness({ isAdmin, hasActiveSubscription, ownedCount }: CanCreateBusinessParams): boolean {
-  if (isAdmin) return true
-  return hasActiveSubscription || ownedCount < 1
+  const { businesses } = getPlanLimits({ isAdmin, hasActiveSubscription })
+  return isUnderLimit(ownedCount, businesses)
 }
 
 export interface CanDeleteBusinessParams {
