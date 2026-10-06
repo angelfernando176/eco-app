@@ -1,40 +1,28 @@
 import { openDatabaseSync, type SQLiteDatabase } from 'expo-sqlite'
+import { latestVersion, pendingMigrations } from './migrations'
 
 export const db: SQLiteDatabase = openDatabaseSync('eco.db')
 
-/** Datos de ingreso a la app (primer acceso: nombre + rango de edad). */
-export interface Ingreso {
-  nombre: string
-  rangoEdad: string
-}
-
 /**
- * Almacenamiento local SQLite (requisito 5 de la app móvil).
+ * Local SQLite storage (app móvil, requisito 5).
  *
- * Tablas locales:
- * - ingreso: datos de ingreso a la app (nombre + rango de edad).
- * - búsquedas, calificaciones, reseñas: pendientes de features posteriores.
- *
- * Esta información se sincroniza posteriormente con Supabase.
+ * Applies pending migrations tracked via `PRAGMA user_version`, upgrading an
+ * existing v1 database (plain `ingreso` table) without losing data.
  */
 export function initLocalDatabase(): void {
-  db.execSync(`
-    CREATE TABLE IF NOT EXISTS ingreso (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      nombre TEXT NOT NULL,
-      rango_edad TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-  `)
-}
+  const row = db.getFirstSync<{ user_version: number }>('PRAGMA user_version')
+  const currentVersion = row?.user_version ?? 0
 
-export function guardarIngreso(nombre: string, rangoEdad: string): void {
-  db.runSync('INSERT INTO ingreso (nombre, rango_edad) VALUES (?, ?)', [nombre, rangoEdad])
-}
+  for (const migration of pendingMigrations(currentVersion)) {
+    db.withTransactionSync(() => {
+      for (const statement of migration.statements) {
+        db.execSync(statement)
+      }
+    })
+    db.execSync(`PRAGMA user_version = ${migration.version}`)
+  }
 
-export function obtenerIngreso(): Ingreso | null {
-  const row = db.getFirstSync<{ nombre: string; rango_edad: string }>(
-    'SELECT nombre, rango_edad FROM ingreso ORDER BY id DESC LIMIT 1'
-  )
-  return row ? { nombre: row.nombre, rangoEdad: row.rango_edad } : null
+  if (currentVersion > latestVersion()) {
+    throw new Error(`Local database version ${currentVersion} is newer than supported ${latestVersion()}`)
+  }
 }

@@ -7,10 +7,23 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "ECO usa tu ubicación para mostrarte negocios cercanos en el mapa."
+      }
     },
     "android": {
-      "package": "com.eco.app"
-    }
+      "package": "com.eco.app",
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]
+    },
+    "plugins": [
+      "expo-video",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "ECO usa tu ubicación para mostrarte negocios cercanos en el mapa."
+        }
+      ]
+    ]
   }
 }
