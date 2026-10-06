@@ -1,0 +1,32 @@
+# ECO — App móvil: sincronización, búsqueda con mapa, ficha del negocio y calificaciones
+
+## Spec (odd/spec.md §4, §5, §6)
+- Primer acceso: nombre + rango de edad. Segundo: "Bienvenido a ECO…" + Registrar (abre la web) / Continuar (sincroniza info local).
+- Búsqueda de negocios con radio 5/10/20/50/100 km desde la ubicación actual; resultados en mapa.
+- Popup del negocio: Google Maps (coordenadas), Videos (reproducir), Ranking (calificaciones/comentarios), Menú
+  (productos/imágenes/precios), Contacto (nombre comercial y datos), Calificar (calificación + comentario).
+- SQLite local: ingreso, búsquedas, calificaciones, reseñas; sincronización posterior a Supabase.
+- Usuario móvil: solo consulta negocios y registra calificaciones/reseñas.
+
+## Decisiones de diseño
+- El usuario móvil **no tiene cuenta de Auth**: opera como `anon`. Las escrituras pasan por RPC
+  `SECURITY DEFINER` en `eco` (migración `0005_mobile.sql`): `register_mobile_user` y `submit_rating`.
+  El `uuid` del perfil móvil actúa como credencial del dispositivo (no se expone en ninguna lectura).
+- Por eso la lectura de `ratings` deja de ser pública: se reemplaza por RPC `list_business_ratings`
+  (rating, comentario, fecha y nombre; sin ids) + `business_rating_summary`. Admin y dueño siguen leyendo la tabla.
+- Búsqueda: caja delimitadora (lat/lon) en SQL + distancia Haversine en el cliente; texto sobre nombre comercial y skills.
+- Las búsquedas viven solo en SQLite (Supabase no tiene tabla de búsquedas en el spec).
+- Mapa: `react-native-maps` (Google Maps en Android); clave `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY`. Videos: `expo-video`.
+- Config por `EXPO_PUBLIC_*` (`.env` lo crea el usuario; la política bloquea escribir `.env`).
+- Fuera de alcance: login móvil, push, edición de negocios desde el móvil, una calificación por usuario/negocio (no está en el spec).
+
+## Tareas
+- [ ] Migración `0005_mobile.sql` + tests pgTAP + prueba real en Postgres (Docker)
+- [ ] Base móvil: dependencias, cliente Supabase, SQLite (ingreso/búsquedas/calificaciones), sincronización, tema
+- [ ] Onboarding con sincronización real (Continuar) y reintentos
+- [ ] Búsqueda: ubicación, radio, texto, mapa y lista de resultados
+- [ ] Ficha del negocio (Mapa, Videos, Ranking, Menú, Contacto, Calificar)
+- [ ] Verificación: typecheck, bundle de Expo, pruebas de lógica pura y de BD
+
+## Commits
+(pendiente)
