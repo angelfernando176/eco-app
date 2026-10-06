@@ -5,7 +5,7 @@
 -- proyecto y no se lee ni se modifica.
 
 begin;
-select plan(14);
+select plan(15);
 
 set search_path to ECO, extensions;
 
@@ -24,7 +24,7 @@ select is(
 
 select is(
   (select type from users where email = 'nuevo@test.eco'),
-  1,
+  1::smallint,
   'perfil creado con type = 1 (web/escritorio)'
 );
 
@@ -44,11 +44,21 @@ select is(ECO.current_user_id() is null, true, 'current_user_id() es null sin au
 -- 3. Datos base para RLS
 -- ---------------------------------------------------------------------------
 -- web_user (dueño autenticado) y mobile_user (type=2, sin cuenta Auth).
-insert into users (auth_user_id, first_name, last_name, age_range, email, type)
-values ('00000000-0000-0000-0000-0000000000b1', 'Web', 'Owner', '25-34', 'web@test.eco', 1);
+-- auth.users dispara handle_new_user(): crea el perfil automáticamente (type=1);
+-- solo completamos los campos que el trigger deja vacíos, en vez de insertar un
+-- segundo perfil con el mismo auth_user_id (duplicaría la fila que resuelve
+-- current_user_id()).
+insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000000b1', 'web@test.eco');
+update users set first_name = 'Web', last_name = 'Owner', age_range = '25-34'
+where auth_user_id = '00000000-0000-0000-0000-0000000000b1';
 
-insert into users (first_name, last_name, age_range, email, type)
-values ('Mob', 'User', '35-44', 'mob@test.eco', 2);
+insert into users (id, first_name, last_name, age_range, email, type)
+values ('00000000-0000-0000-0000-0000000000f1', 'Mob', 'User', '35-44', 'mob@test.eco', 2);
+
+-- Dueño ajeno sin negocios: el trigger de límite (BEFORE INSERT) corre antes que RLS, así que
+-- para ejercitar la política WITH CHECK el dueño destino no debe tener ya su negocio permitido.
+insert into users (id, first_name, last_name, age_range, email, type)
+values ('00000000-0000-0000-0000-0000000000f2', 'Otro', 'Dueño', '25-34', 'otro@test.eco', 1);
 
 -- Un negocio de otro dueño para probar la lectura pública.
 insert into businesses (owner_id, trade_name, ruc, phone, representative_email,
@@ -78,8 +88,7 @@ $$, 'web_user inserta su propio negocio');
 select throws_ok($$
   insert into businesses (owner_id, trade_name, ruc, phone, representative_email,
     latitude, longitude, main_street, secondary_street, number, reference)
-  select id, 'Ajeno', '333', '099', 'ajeno@test.eco', 0, 0, 'E', 'F', '3', 'T'
-  from users where email = 'mob@test.eco'
+  values ('00000000-0000-0000-0000-0000000000f2', 'Ajeno', '333', '099', 'ajeno@test.eco', 0, 0, 'E', 'F', '3', 'T')
 $$, '42501', NULL, 'web_user no inserta negocios de otro dueño');
 
 select lives_ok($$
@@ -87,15 +96,26 @@ select lives_ok($$
   where representative_email = 'web@test.eco'
 $$, 'web_user edita su propio negocio');
 
-select throws_ok($$
-  delete from businesses where representative_email = 'web@test.eco'
-$$, '42501', NULL, 'web_user no borra negocios (solo admin)');
+-- Sin política DELETE aplicable, Postgres no lanza error: filtra y borra 0 filas.
+delete from businesses where representative_email = 'web@test.eco';
+select is(
+  (select count(*)::int from businesses where representative_email = 'web@test.eco'),
+  1,
+  'web_user no borra negocios (solo admin)'
+);
+
+-- Plan sin suscripción (0004): el dueño puede crear su único producto, no un segundo.
+select lives_ok($$
+  insert into products (business_id, name)
+  select id, 'Producto gratis'
+  from businesses where representative_email = 'web@test.eco'
+$$, 'web_user sin suscripción crea su único producto');
 
 select throws_ok($$
   insert into products (business_id, name)
-  select id, 'Producto sin suscripción'
+  select id, 'Segundo producto'
   from businesses where representative_email = 'web@test.eco'
-$$, '42501', NULL, 'web_user sin suscripción no gestiona el menú');
+$$, 'P0001', NULL, 'web_user sin suscripción no crea un segundo producto');
 
 reset role;
 
@@ -123,8 +143,7 @@ set local "request.jwt.claims" to '{"sub":"00000000-0000-0000-0000-0000000000c1"
 select throws_ok($$
   insert into businesses (owner_id, trade_name, ruc, phone, representative_email,
     latitude, longitude, main_street, secondary_street, number, reference)
-  select id, 'Sin perfil', '444', '099', 'x@test.eco', 0, 0, 'G', 'H', '4', 'U'
-  from users where email = 'web@test.eco'
+  values ('00000000-0000-0000-0000-0000000000f2', 'Sin perfil', '444', '099', 'x@test.eco', 0, 0, 'G', 'H', '4', 'U')
 $$, '42501', NULL, 'autenticado sin perfil no escribe negocios');
 
 reset role;

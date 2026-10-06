@@ -5,7 +5,7 @@
 -- proyecto y no se lee ni se modifica.
 
 begin;
-select plan(11);
+select plan(12);
 
 set search_path to ECO, extensions;
 
@@ -83,17 +83,24 @@ select throws_ok($$
   select id, 'http://img/8', 8 from products where name = 'Café con leche'
 $$, 'P0001', NULL, 'product_images: máx 7 por producto');
 
--- 8. videos: máximo 1 por producto
+-- 8. videos: máximo 2 por negocio (0004_catalog_limits_storage.sql redefine el
+--    límite a nivel de negocio; ya no hay tope por producto).
 insert into videos (business_id, product_id, url)
 select b.id, p.id, 'http://vid/1'
 from businesses b, products p
 where b.representative_email = 'cafe@test.eco' and p.name = 'Café con leche';
-select throws_ok($$
+select lives_ok($$
   insert into videos (business_id, product_id, url)
   select b.id, p.id, 'http://vid/2'
   from businesses b, products p
   where b.representative_email = 'cafe@test.eco' and p.name = 'Café con leche'
-$$, 'P0001', NULL, 'videos: máx 1 por producto');
+$$, 'videos: un segundo video del mismo producto no está limitado por producto');
+select throws_ok($$
+  insert into videos (business_id, product_id, url)
+  select b.id, p.id, 'http://vid/3'
+  from businesses b, products p
+  where b.representative_email = 'cafe@test.eco' and p.name = 'Café con leche'
+$$, 'P0001', NULL, 'videos: máx 2 por negocio');
 
 -- 9. set_updated_at sobreescribe updated_at
 update businesses set updated_at = '2000-01-01 00:00:00+00' where representative_email = 'cafe@test.eco';

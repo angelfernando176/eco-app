@@ -21,7 +21,7 @@
 - Fuera de alcance: login móvil, push, edición de negocios desde el móvil, una calificación por usuario/negocio (no está en el spec).
 
 ## Tareas
-- [ ] Migración `0005_mobile.sql` + tests pgTAP + prueba real en Postgres (Docker)
+- [x] Migración `0005_mobile.sql` + tests pgTAP + prueba real en Postgres (Docker)
 - [ ] Base móvil: dependencias, cliente Supabase, SQLite (ingreso/búsquedas/calificaciones), sincronización, tema
 - [ ] Onboarding con sincronización real (Continuar) y reintentos
 - [ ] Búsqueda: ubicación, radio, texto, mapa y lista de resultados
@@ -30,3 +30,11 @@
 
 ## Commits
 (pendiente)
+
+## Verificación de base de datos (Docker, `supabase/tests/harness/run.sh`)
+- Postgres 16 descartable + pgTAP + stubs de Supabase (roles, auth, storage); aplica 0001–0005 y corre todos los tests.
+- Resultado: **79 pruebas OK, 0 fallos** (0001: 12, 0002: 15, 0004: 27, 0005: 25).
+- Hallazgo: los tests 8, 10, 11 y 13 de `0002` estaban mal escritos (nunca se habían ejecutado): RLS ocultaba
+  la fila ajena al `SELECT` del `INSERT…SELECT`, `DELETE` sin política filtra en vez de lanzar error, el trigger de
+  límite corre antes que RLS, y el test 11 contradecía la regla de plan de `0004`. Se corrigieron los tests; las políticas no tenían defecto.
+- Riesgo conocido: `register_mobile_user` y `submit_rating` son invocables por `anon` sin límite de frecuencia (spam posible).
