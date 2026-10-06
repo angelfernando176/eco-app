@@ -26,6 +26,11 @@ export function canDeleteBusiness({ isAdmin }: CanDeleteBusinessParams): boolean
 export type BusinessFieldErrors = Partial<Record<keyof BusinessInput, string>>
 
 const EMAIL_PATTERN = /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)+$/
+
+/** Shared pure email format check (reused outside the business form, e.g. user creation). */
+export function isValidEmail(value: string): boolean {
+  return EMAIL_PATTERN.test(value.trim())
+}
 const RUC_PATTERN = /^\d+$/
 const PHONE_ALLOWED_PATTERN = /^[0-9+\-() ]+$/
 
@@ -64,7 +69,7 @@ export function validateBusinessInput(input: BusinessInput): BusinessFieldErrors
   }
 
   const email = input.representativeEmail.trim()
-  if (email.length > limits.representativeEmail.max || !EMAIL_PATTERN.test(email)) {
+  if (email.length > limits.representativeEmail.max || !isValidEmail(email)) {
     errors.representativeEmail = 'Ingresá un correo válido.'
   }
 

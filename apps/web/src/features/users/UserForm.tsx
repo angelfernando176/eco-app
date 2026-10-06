@@ -66,8 +66,12 @@ export default function UserForm({ user, subscription, onUpdated, onSubscription
     setActivateError(null)
     try {
       const activated = await activateSubscription(user.id)
-      notifySubscriptionActivated(user, activated)
-      setActivateSuccess('Suscripción activada correctamente.')
+      const notifyResult = await notifySubscriptionActivated(user.id)
+      setActivateSuccess(
+        notifyResult.sent
+          ? `Suscripción activada. Se envió un correo de aviso a ${user.email}.`
+          : `Suscripción activada, pero no se pudo enviar el correo de aviso: ${notifyResult.error ?? 'error desconocido'}.`
+      )
       onSubscriptionActivated(activated)
       setActivateConfirmOpen(false)
     } catch (err) {

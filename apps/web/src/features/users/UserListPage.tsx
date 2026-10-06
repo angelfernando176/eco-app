@@ -36,10 +36,11 @@ type FieldFilterState = Partial<Record<SearchableField, string>>
 
 interface UserListPageProps {
   profile: User
+  onCreate: () => void
   onEdit: (userId: string) => void
 }
 
-export default function UserListPage({ profile, onEdit }: UserListPageProps) {
+export default function UserListPage({ profile, onCreate, onEdit }: UserListPageProps) {
   const [page, setPage] = useState(0)
   const [filterInputs, setFilterInputs] = useState<FieldFilterState>({})
   const [typeFilter, setTypeFilter] = useState<'' | UserTypeValue>('')
@@ -136,7 +137,7 @@ export default function UserListPage({ profile, onEdit }: UserListPageProps) {
       <PageHeader
         title="Usuarios"
         actions={
-          <Button type="button" disabled title="Próximamente">
+          <Button type="button" onClick={onCreate}>
             Crear usuario
           </Button>
         }

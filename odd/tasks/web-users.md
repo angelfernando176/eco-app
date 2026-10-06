@@ -20,9 +20,10 @@ tipo (1 = web/escritorio, 2 = móvil), correo. Paginación, búsqueda por campo,
 - [x] Capa de datos (listUsers con filtros/paginación, update, soft-delete, activar suscripción)
 - [x] Shell con navegación + listado de usuarios
 - [x] Edición de usuario + Activar suscripción (+ estado de suscripción)
-- [ ] Edge Functions `eco-admin-create-user` y `eco-notify-subscription` (Resend) + docs de despliegue
-- [ ] Web: formulario Crear usuario + aviso de activación conectado
-- [ ] Verificación (typecheck + build); prueba manual
+- [x] Edge Functions `eco-admin-create-user` y `eco-notify-subscription` (Resend) + docs de despliegue
+- [x] Web: formulario Crear usuario + aviso de activación conectado
+- [x] Verificación: typecheck + build OK
+- [ ] Prueba manual (requiere desplegar funciones y secretos)
 
 ## Commits
 (pendiente)

@@ -7,6 +7,7 @@ import BusinessListPage from '../businesses/BusinessListPage'
 import BusinessDetailPage from '../businesses/BusinessDetailPage'
 import UserListPage from '../users/UserListPage'
 import UserDetailPage from '../users/UserDetailPage'
+import UserCreatePage from '../users/UserCreatePage'
 
 interface AppShellProps {
   session: Session
@@ -18,6 +19,7 @@ type ShellView =
   | { screen: 'list' }
   | { screen: 'detail'; businessId: string | null }
   | { screen: 'userDetail'; userId: string }
+  | { screen: 'userCreate' }
 
 export default function AppShell({ session }: AppShellProps) {
   const { profile, isAdmin, hasActiveSubscription, loading, error, reload } = useProfile(session)
@@ -118,11 +120,19 @@ export default function AppShell({ session }: AppShellProps) {
         )}
 
         {!loading && !error && profile && effectiveSection === 'users' && view.screen === 'list' && (
-          <UserListPage profile={profile} onEdit={(userId) => setView({ screen: 'userDetail', userId })} />
+          <UserListPage
+            profile={profile}
+            onCreate={() => setView({ screen: 'userCreate' })}
+            onEdit={(userId) => setView({ screen: 'userDetail', userId })}
+          />
         )}
 
         {!loading && !error && profile && effectiveSection === 'users' && view.screen === 'userDetail' && (
           <UserDetailPage userId={view.userId} onBack={() => setView({ screen: 'list' })} />
+        )}
+
+        {!loading && !error && profile && effectiveSection === 'users' && view.screen === 'userCreate' && (
+          <UserCreatePage onBack={() => setView({ screen: 'list' })} onCreated={() => setView({ screen: 'list' })} />
         )}
       </main>
     </div>

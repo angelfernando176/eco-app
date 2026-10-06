@@ -1,8 +1,10 @@
+import { isValidEmail } from '../businesses/rules'
 import { AGE_RANGES } from './ageRanges'
 import { USER_FIELD_LIMITS } from './limits'
-import type { UserInput } from './types'
+import type { CreateUserInput, UserInput } from './types'
 
 export type UserFieldErrors = Partial<Record<keyof UserInput, string>>
+export type CreateUserFieldErrors = Partial<Record<keyof CreateUserInput, string>>
 
 function validateLength(value: string, min: number, max: number, label: string, errors: UserFieldErrors, key: keyof UserInput) {
   const length = value.trim().length
@@ -28,4 +30,12 @@ export function validateUserInput(input: UserInput): UserFieldErrors {
 /** Admins never deactivate their own profile from this screen (keeps at least one active admin session). */
 export function canDeactivateUser({ isSelf }: { isSelf: boolean }): boolean {
   return !isSelf
+}
+
+export function validateCreateUserInput(input: CreateUserInput): CreateUserFieldErrors {
+  const errors: CreateUserFieldErrors = validateUserInput(input)
+  if (!isValidEmail(input.email)) {
+    errors.email = 'Ingresá un correo válido.'
+  }
+  return errors
 }

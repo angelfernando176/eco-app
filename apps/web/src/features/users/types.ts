@@ -11,6 +11,11 @@ export interface UserInput {
   ageRange: string
 }
 
+/** Input for creating a web/desktop account: adds the email the invitation is sent to. */
+export interface CreateUserInput extends UserInput {
+  email: string
+}
+
 /** Optional type filter for the list screen (1 = web/escritorio, 2 = móvil). */
 export type TypeFilter = UserTypeValue | ''
 

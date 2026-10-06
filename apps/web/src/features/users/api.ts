@@ -1,6 +1,7 @@
+import { FunctionsHttpError } from '@supabase/supabase-js'
 import type { Subscription, User, UserTypeValue } from '@eco/shared'
 import { supabase } from '../../lib/supabase'
-import type { SearchableField, SubscriptionBadgeState, UserInput, UserListFilters } from './types'
+import type { CreateUserInput, SearchableField, SubscriptionBadgeState, UserInput, UserListFilters } from './types'
 
 const SEARCHABLE_FIELDS: SearchableField[] = ['first_name', 'last_name', 'age_range', 'email']
 
@@ -197,11 +198,64 @@ export async function activateSubscription(userId: string): Promise<Subscription
   return mapSubscriptionRow(data as SubscriptionRow)
 }
 
-/**
- * Hook point for the activation email: sending it needs a server function (Supabase Edge
- * Function + email provider), not available from the browser. This is a no-op placeholder
- * so the UI never claims an email was sent until that later task wires it up.
- */
-export function notifySubscriptionActivated(_user: User, _subscription: Subscription): void {
-  // Intentionally empty: see doc comment above.
+/** Error from an Edge Function call, with the HTTP status when available (e.g. for 409 field errors). */
+export class WebFunctionError extends Error {
+  readonly status?: number
+
+  constructor(message: string, status?: number) {
+    super(message)
+    this.status = status
+  }
+}
+
+async function mapFunctionError(error: unknown, fallback: string): Promise<WebFunctionError> {
+  if (error instanceof FunctionsHttpError) {
+    const response = error.context as Response | undefined
+    const status = response?.status
+    let serverMessage: string | undefined
+    try {
+      const body = await response?.json()
+      serverMessage = typeof body?.error === 'string' ? body.error : undefined
+    } catch {
+      serverMessage = undefined
+    }
+    if (status === 401) return new WebFunctionError('No tenés una sesión válida. Iniciá sesión nuevamente.', status)
+    if (status === 403) return new WebFunctionError('No tenés permisos de administrador para esta acción.', status)
+    if (status === 409) return new WebFunctionError(serverMessage ?? 'Ya existe una cuenta con ese correo electrónico.', status)
+    return new WebFunctionError(serverMessage ?? fallback, status)
+  }
+  return new WebFunctionError('No se pudo contactar el servidor.')
+}
+
+export interface CreateWebUserResult {
+  created: boolean
+  userId: string
+  emailSent: boolean
+  emailError?: string
+}
+
+/** Admin-only: creates a web/desktop Auth account (type=1) and sends the invitation email. */
+export async function createWebUser(input: CreateUserInput): Promise<CreateWebUserResult> {
+  const client = requireClient()
+  const { data, error } = await client.functions.invoke('eco-admin-create-user', { body: input })
+  if (error) throw await mapFunctionError(error, 'No se pudo crear el usuario.')
+  return data as CreateWebUserResult
+}
+
+export interface NotifySubscriptionResult {
+  sent: boolean
+  error?: string
+}
+
+/** Sends the "subscription activated" email. Never throws for provider failure: by the time
+ * this runs the subscription is already active in the database, so the caller should show an
+ * honest partial-success message instead of treating this as a failed activation. */
+export async function notifySubscriptionActivated(userId: string): Promise<NotifySubscriptionResult> {
+  const client = requireClient()
+  const { data, error } = await client.functions.invoke('eco-notify-subscription', { body: { userId } })
+  if (error) {
+    const mapped = await mapFunctionError(error, 'No se pudo enviar el correo de aviso.')
+    return { sent: false, error: mapped.message }
+  }
+  return data as NotifySubscriptionResult
 }
