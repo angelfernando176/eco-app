@@ -25,7 +25,7 @@
 - [x] Base móvil: dependencias, cliente Supabase, SQLite (ingreso/búsquedas/calificaciones), sincronización, tema
 - [x] Onboarding con sincronización real (Continuar) y reintentos
 - [x] Búsqueda: ubicación, radio, texto, mapa y lista de resultados
-- [ ] Ficha del negocio (Mapa, Videos, Ranking, Menú, Contacto, Calificar)
+- [x] Ficha del negocio (Mapa, Videos, Ranking, Menú, Contacto, Calificar)
 - [ ] Verificación: typecheck, bundle de Expo, pruebas de lógica pura y de BD
 
 ## Commits
