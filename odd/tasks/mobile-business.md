@@ -54,6 +54,18 @@
   en el momento de la acción (no se cachean binarios localmente); si no hay conexión
   se informa y no se permite la acción, consistente con que son "contenido adicional"
   fuera de la regla de sincronización de ingreso/búsquedas/calificaciones del spec.
+- El dispositivo/app soporta **exactamente un negocio registrado localmente a la
+  vez**: el flujo de registro móvil de este feature habla siempre de "el negocio"
+  en singular (bienvenida Registrar/Ver negocio, un solo mapa+formulario). El
+  esquema SQLite local (T3) guarda por lo tanto una única fila `negocio` vigente
+  (`ORDER BY id DESC LIMIT 1`, no una lista); multi-negocio por dueño sigue siendo
+  responsabilidad exclusiva del flujo web/desktop, que ya lo soporta vía
+  suscripciones. `negocio.password` guarda el password en texto plano **solo**
+  mientras una alta/edición-con-password-nueva está pendiente de sync (se necesita
+  para reintentar la llamada a la RPC más tarde, que es quien la hashea); se limpia
+  (`NULL`) en el repositorio apenas el servidor confirma el alta/edición
+  (`marcarAltaSincronizada`/`marcarActualizacionSincronizada`), nunca queda en texto
+  plano una vez sincronizado.
 - Nueva Edge Function `eco-mobile-media-upload` (service-role): valida
   `owner_id` (debe ser `type=2`, `status='active'`, dueño del `business_id`) y
   suscripción activa del dueño, sube el archivo a `eco-media` y crea la fila en
@@ -69,7 +81,7 @@
       tests pgTAP + corrida en harness Docker (`supabase/tests/harness/run.sh`).
 - [x] T2 — Edge Function `eco-mobile-media-upload` (POST subir, DELETE borrar) +
       despliegue y smoke test contra el proyecto real (`jtrrqbnxhxxqjcpizjuy`).
-- [ ] T3 — SQLite móvil: migración v3 (`negocio`, estado pendiente de sync) +
+- [x] T3 — SQLite móvil: migración v3 (`negocio`, estado pendiente de sync) +
       repositorio `db/negocio.ts` + lógica pura de validación/payloads
       (`services/mobileBusinessLogic.ts`) + sincronización
       (`services/businessSync.ts`, integrado a `syncPending`).
@@ -153,3 +165,10 @@
     con un `select count(*)` posterior = 0). **Pendiente real:** repetir el smoke test del camino feliz
     de `eco-mobile-media-upload` (alta de negocio + foto/video con suscripción activa) contra el
     proyecto ya migrado, cuando se pruebe en dispositivo/emulador real (T7).
+- T3: lógica pura de `services/mobileBusinessLogic.ts` (validación de password/formulario, builders de
+  payload de `register_mobile_business`/`update_mobile_business`/`deactivate_mobile_business`,
+  `decideBusinessSyncAction`) verificada con un script throwaway `ts-node` (no commiteado, borrado al
+  terminar): **36/36 aserciones OK**. `npm run typecheck` (mobile, web, shared): **0 errores**. No hay
+  runner de test de Expo/React Native en este repo (no se inventó ninguno); `db/negocio.ts` y
+  `services/businessSync.ts` dependen de `expo-sqlite`/`@supabase/supabase-js` y no se pudieron
+  ejercer fuera de un entorno Expo real, quedan sin verificación de ejecución hasta T7 (repaso manual).

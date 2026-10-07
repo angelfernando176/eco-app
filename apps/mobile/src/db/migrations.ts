@@ -45,6 +45,31 @@ export const MIGRATIONS: Migration[] = [
       );`,
     ],
   },
+  {
+    version: 3,
+    statements: [
+      `CREATE TABLE IF NOT EXISTS negocio (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        remote_id TEXT,
+        owner_remote_id TEXT NOT NULL,
+        trade_name TEXT NOT NULL,
+        ruc TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        latitude REAL NOT NULL,
+        longitude REAL NOT NULL,
+        product_name TEXT NOT NULL,
+        product_price REAL NOT NULL,
+        password TEXT,
+        status TEXT NOT NULL DEFAULT 'active',
+        pending_action TEXT,
+        pending_reason TEXT,
+        pending_comment TEXT,
+        synced_at TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );`,
+    ],
+  },
 ]
 
 export function pendingMigrations(currentVersion: number): Migration[] {

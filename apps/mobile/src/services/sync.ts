@@ -2,12 +2,14 @@ import { supabase } from '../lib/supabase'
 import { marcarIngresoSincronizado, obtenerIngreso } from '../db/ingreso'
 import { listarCalificacionesPendientes, marcarCalificacionSincronizada } from '../db/calificaciones'
 import { buildRatingPayload, decideSyncActions, isPermanentRejection, mapSyncErrorToSpanish } from './syncLogic'
+import { syncNegocioPendiente } from './businessSync'
 
 export interface SyncResult {
   registered: boolean
   ratingsSynced: number
   ratingsPending: number
   error?: string
+  businessSync?: { action: string; ok: boolean; error?: string }
 }
 
 let inFlight: Promise<SyncResult> | null = null
@@ -68,12 +70,15 @@ async function runSync(): Promise<SyncResult> {
   const pendientes = listarCalificacionesPendientes()
   const decision = decideSyncActions({ hasRemoteUserId: registered, pendingCount: pendientes.length })
 
+  const businessSync = remoteUserId ? await syncNegocioPendiente(remoteUserId) : undefined
+
   if (!decision.canPushRatings) {
     return {
       registered,
       ratingsSynced: 0,
       ratingsPending: pendientes.length,
       error: registerError ?? decision.skipReason ?? undefined,
+      businessSync,
     }
   }
 
@@ -104,5 +109,6 @@ async function runSync(): Promise<SyncResult> {
     ratingsSynced,
     ratingsPending: listarCalificacionesPendientes().length,
     error: registerError ?? pushError,
+    businessSync,
   }
 }
