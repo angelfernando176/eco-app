@@ -130,7 +130,7 @@
       activa): selector de imagen/video (`expo-image-picker`), llamada a la Edge
       Function, alta/baja de skills vía RPC, aviso cuando no hay suscripción o no hay
       conexión.
-- [ ] T7 — Verificación: typecheck (mobile/web/shared), harness Docker pgTAP,
+- [x] T7 — Verificación: typecheck (mobile/web/shared), harness Docker pgTAP,
       `expo export --platform android`, repaso manual de los flujos nuevos (sin
       dispositivo real — se deja explícito como no verificado).
 
@@ -277,3 +277,31 @@
     (`jtrrqbnxhxxqjcpizjuy`), el borrado de contenido ya subido, ni el alta/baja real de un skill contra
     `add_mobile_skill`/`delete_mobile_skill`. Este es el riesgo principal a señalar en T7: la UX del
     selector y la carga real contra producción están sin verificar end-to-end.
+
+### T7 — Cierre del incremento (2026-10-07)
+- Re-ejecutado sobre el estado final de la rama (commit `0917f47`, 6 commits de feature sobre
+  `feat/mobile-app`):
+  - `npm run typecheck --workspaces` (mobile, web, shared): **0 errores**.
+  - Harness Docker pgTAP (`supabase/tests/harness/run.sh`, 0001–0006): **112 pruebas OK, 0 fallos**.
+  - `npx expo export --platform android`: **éxito**, 692 módulos, bundle 2.44 MB.
+  - Barrido de secretos en los archivos tocados por esta feature: sin credenciales nuevas expuestas
+    (el único hallazgo, la anon key pública en `odd/spec.md:214`, ya existía de antes y está documentada
+    como no sensible).
+  - Infraestructura real: migración `0006_mobile_business.sql` aplicada a `jtrrqbnxhxxqjcpizjuy`
+    (historial 0001-0006 reparado y confirmado con `supabase migration list`); Edge Function
+    `eco-mobile-media-upload` desplegada; usuario de prueba del smoke test de T2 eliminado y confirmado.
+- **No verificado (requiere dispositivo/emulador real o pruebas manuales del usuario), acumulado de
+  T1-T6:**
+  1. Flujo completo de alta por teléfono (mapa → formulario → Guardar → SQLite → sync) contra un
+     dispositivo real, incluyendo el caso sin conexión (alta pendiente → sync en el siguiente ingreso).
+  2. "Ver negocio": edición real, botón "Actualizar ubicación actual", el toggle de "Confirmar Password".
+  3. Dar de baja: encuesta → envío → negocio inactivo de solo lectura, contra Supabase real.
+  4. Fotos/Videos/Skills: selector real de imagen/video, subida real contra la Edge Function ya
+     desplegada y migrada, borrado de contenido, alta/baja real de skills (incluyendo el límite 1/10).
+  5. El camino feliz de `eco-mobile-media-upload` (con una suscripción activa real) nunca se ejerció
+     de punta a punta contra producción — el smoke test de T2 solo llegó a validar el camino de rechazo
+     por falta de suscripción/negocio (ver sección T2 arriba), y eso fue antes de que 0006 estuviera
+     aplicada; no se repitió después de aplicarla.
+- **Pendiente de decisión del usuario:** cuándo instalar/generar un nuevo APK (EAS build) e instalarlo
+  en un dispositivo/emulador para ejercer los 5 puntos de arriba. Hasta entonces, esta feature queda
+  verificada por código (tipos, pgTAP, bundling) pero no por uso real.
