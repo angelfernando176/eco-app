@@ -66,6 +66,17 @@
   (`NULL`) en el repositorio apenas el servidor confirma el alta/edición
   (`marcarAltaSincronizada`/`marcarActualizacionSincronizada`), nunca queda en texto
   plano una vez sincronizado.
+- `BusinessFormScreen` (T4) exige `owner_remote_id` no nulo **antes** de insertar la fila local
+  pendiente (`negocio.owner_remote_id` es `NOT NULL` desde T3): al momento de Guardar relee
+  `ingreso.remoteUserId` fresco (no confía en el prop recibido al entrar a la pantalla, que pudo
+  quedar obsoleto si el ingreso se sincronizó mientras el usuario llenaba el formulario) y, si sigue
+  siendo `null` (el perfil móvil nunca se sincronizó), **no guarda nada** y muestra un aviso pidiendo
+  conectarse a Internet al menos una vez antes de registrar el negocio. Se descartó guardar con un
+  placeholder local y resolver el `owner_remote_id` después, porque `register_mobile_business` (T1)
+  requiere el id real del dueño en el mismo payload de alta — no hay manera de "corregir" después un
+  owner placeholder sin otro mecanismo de reconciliación, y el spec ya asume que el ingreso se registra
+  antes de poder usar la app (ver `App.tsx`: `syncPending()` se dispara en cada arranque con ingreso
+  guardado), por lo que este caso debería ser raro (solo sin conexión en el primer arranque).
 - Nueva Edge Function `eco-mobile-media-upload` (service-role): valida
   `owner_id` (debe ser `type=2`, `status='active'`, dueño del `business_id`) y
   suscripción activa del dueño, sube el archivo a `eco-media` y crea la fila en
@@ -85,7 +96,7 @@
       repositorio `db/negocio.ts` + lógica pura de validación/payloads
       (`services/mobileBusinessLogic.ts`) + sincronización
       (`services/businessSync.ts`, integrado a `syncPending`).
-- [ ] T4 — UI de alta: bienvenida con Registrar (expande Teléfono/Computadora),
+- [x] T4 — UI de alta: bienvenida con Registrar (expande Teléfono/Computadora),
       mapa + botón iniciar registro, formulario de alta con validación de password,
       indicador de progreso y mensaje de recordatorio.
 - [ ] T5 — UI "Ver negocio": edición de los mismos campos, Dar de baja con encuesta
@@ -101,6 +112,7 @@
 
 ## Commits
 - `d75377d` feat(db): add mobile business registration, update, deactivation RPCs (0006)
+- `cefa8d1` feat(mobile): add business registration UI (welcome, map, form)
 
 ## Verificación
 - T1: se corrigió `supabase/tests/harness/run.sh` (listaba migraciones hardcodeadas hasta 0005; se
@@ -172,3 +184,23 @@
   runner de test de Expo/React Native en este repo (no se inventó ninguno); `db/negocio.ts` y
   `services/businessSync.ts` dependen de `expo-sqlite`/`@supabase/supabase-js` y no se pudieron
   ejercer fuera de un entorno Expo real, quedan sin verificación de ejecución hasta T7 (repaso manual).
+- T4: nuevos `apps/mobile/src/screens/RegisterMapScreen.tsx`, `apps/mobile/src/screens/
+  BusinessFormScreen.tsx`, `apps/mobile/src/components/HelpTooltip.tsx`; reescrito
+  `apps/mobile/src/screens/SecondAccessScreen.tsx` (bienvenida con fila Registrar/Continuar o Ver
+  negocio/Continuar según `negocioExistente`, expansión Teléfono/Computadora) y `apps/mobile/App.tsx`
+  (nuevas fases `registrarMapa`/`registrarFormulario`/`verNegocioPlaceholder`, cálculo de
+  `negocioExistente` con `obtenerNegocioLocal()` al cargar y al volver del formulario, placeholder de
+  "Ver negocio" para T5). No hay runner de test de Expo/React Native en este repo (igual que T3); no se
+  inventó ninguno. Sigue sin haber runtime de pruebas de componentes RN en este repo — se aplicó la
+  excepción de test-first documentada para este tipo de cambio (UI sin runner disponible) y se corrió
+  verificación funcional proporcionada por typecheck + bundling real en su lugar.
+  - `npm run typecheck --workspace @eco/mobile`: **0 errores**.
+  - `npx expo export --platform android` (apps/mobile): **éxito**, bundle Android de 683 módulos
+    (`index-953c182d1a8f1bbd918ed25aad22e030.hbc`, 2.39 MB), confirma que todo el grafo de
+    dependencias (incluyendo las pantallas nuevas y `react-native-maps`/`expo-location`) compila y
+    empaqueta sin errores.
+  - **No se realizó verificación manual en dispositivo/emulador real** (no hay dispositivo disponible
+    en este entorno) — igual que T1/T2/T3, este gap queda explícito y pendiente para el repaso manual
+    de T7. En particular no se ejerció interactivamente: el toggle de expansión Teléfono/Computadora,
+    la carga real de `getCurrentPosition()` en `RegisterMapScreen`, el renderizado del `MapView`/`Marker`,
+    ni el flujo completo de Guardar en `BusinessFormScreen` contra una base SQLite real.

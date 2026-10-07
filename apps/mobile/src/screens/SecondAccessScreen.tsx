@@ -7,14 +7,27 @@ import { syncPending } from '../services/sync'
 import { colors, spacing, typography } from '../theme'
 
 export interface SecondAccessScreenProps {
+  negocioExistente: boolean
   onContinuar: () => void
+  onRegistrarTelefono: () => void
+  onVerNegocio: () => void
 }
 
-export function SecondAccessScreen({ onContinuar }: SecondAccessScreenProps) {
+export function SecondAccessScreen({
+  negocioExistente,
+  onContinuar,
+  onRegistrarTelefono,
+  onVerNegocio,
+}: SecondAccessScreenProps) {
   const [sincronizando, setSincronizando] = useState(false)
   const [aviso, setAviso] = useState<string | null>(null)
+  const [expandido, setExpandido] = useState(false)
 
   function handleRegistrar() {
+    setExpandido((v) => !v)
+  }
+
+  function handleRegistrarComputadora() {
     void Linking.openURL(ecoWebUrl)
   }
 
@@ -33,17 +46,43 @@ export function SecondAccessScreen({ onContinuar }: SecondAccessScreenProps) {
     <View style={styles.container}>
       <Text style={styles.title}>ECO</Text>
       <Text style={styles.welcome}>
-        Bienvenido a ECO. Si quieres registrar tu negocio debes dar clic en Registrar.
+        {negocioExistente
+          ? 'Bienvenido a ECO. Puedes ver tu negocio o continuar.'
+          : 'Bienvenido a ECO. Si quieres registrar tu negocio debes dar clic en Registrar.'}
       </Text>
       {aviso ? <Banner variant="error" message={aviso} /> : null}
-      <Button title="Registrar" onPress={handleRegistrar} style={styles.button} />
-      <Button
-        title="Continuar"
-        variant="secondary"
-        onPress={handleContinuar}
-        loading={sincronizando}
-        style={styles.button}
-      />
+
+      <View style={styles.row}>
+        {negocioExistente ? (
+          <Button title="Ver negocio" onPress={onVerNegocio} style={styles.rowButton} />
+        ) : (
+          <Button title="Registrar" onPress={handleRegistrar} style={styles.rowButton} />
+        )}
+        <Button
+          title="Continuar"
+          variant="secondary"
+          onPress={handleContinuar}
+          loading={sincronizando}
+          style={styles.rowButton}
+        />
+      </View>
+
+      {!negocioExistente && expandido ? (
+        <View style={styles.row}>
+          <Button
+            title="📱 Teléfono"
+            variant="ghost"
+            onPress={onRegistrarTelefono}
+            style={styles.rowButton}
+          />
+          <Button
+            title="🖥️ Computadora"
+            variant="ghost"
+            onPress={handleRegistrarComputadora}
+            style={styles.rowButton}
+          />
+        </View>
+      ) : null}
     </View>
   )
 }
@@ -68,7 +107,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: spacing[6],
   },
-  button: {
+  row: {
+    flexDirection: 'row',
+    alignSelf: 'stretch',
+    gap: spacing[3],
     marginTop: spacing[4],
+  },
+  rowButton: {
+    flex: 1,
   },
 })
