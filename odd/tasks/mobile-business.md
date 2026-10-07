@@ -77,6 +77,17 @@
   owner placeholder sin otro mecanismo de reconciliación, y el spec ya asume que el ingreso se registra
   antes de poder usar la app (ver `App.tsx`: `syncPending()` se dispara en cada arranque con ingreso
   guardado), por lo que este caso debería ser raro (solo sin conexión en el primer arranque).
+- **`fetchMainProductId` deriva el id del producto principal de la tabla pública `products` (T6):**
+  `Negocio` (SQLite local, T3) no guarda ningún id remoto de producto — solo `remote_id` del negocio.
+  En vez de agregar una columna nueva (`product_remote_id`) y un nuevo paso de sincronización para
+  llenarla, `MobileContentScreen` resuelve el id del producto principal en caliente con
+  `select id from products where business_id = ? order by created_at asc limit 1` (política de
+  lectura pública ya existente, sin RPC). Es consistente con la decisión de que "producto principal"
+  es simplemente el primer producto normal creado junto con el negocio (ver más arriba) y evita tocar
+  el esquema SQLite de T3 por una tarea que de todas formas requiere conexión (Fotos/Videos/Skills no
+  son offline-first). Costo aceptado: si el negocio aún no sincronizó su alta (`remoteId === null`) o
+  el producto aún no sincronizó (fila aún no visible en `products`), la pantalla lo informa con un
+  `Banner`/`SectionState` en vez de permitir gestionar contenido, sin bloquear el resto de la app.
 - **Sin flujo de reactivación (T5):** un negocio local dado de baja (`status = 'inactive'`) no tiene
   ningún camino para volver a `active` en este incremento (no está en el requerimiento original). "Ver
   negocio" para un negocio inactivo se vuelve de solo lectura: muestra sus datos más un `Banner`
@@ -115,7 +126,7 @@
 - [x] T5 — UI "Ver negocio": edición de los mismos campos, Dar de baja con encuesta
       de motivos fijos + comentario, detección en `App.tsx` de negocio local existente
       para decidir Registrar vs Ver negocio.
-- [ ] T6 — Gestión de Fotos/Videos/Skills desde "Ver negocio" (solo con suscripción
+- [x] T6 — Gestión de Fotos/Videos/Skills desde "Ver negocio" (solo con suscripción
       activa): selector de imagen/video (`expo-image-picker`), llamada a la Edge
       Function, alta/baja de skills vía RPC, aviso cuando no hay suscripción o no hay
       conexión.
@@ -241,3 +252,28 @@
     un negocio sincronizado con/sin suscripción activa, ni el flujo completo de Dar de baja (encuesta →
     `prepararBajaPendiente` → `syncPending` → negocio inactivo de solo lectura) contra SQLite/Supabase
     reales.
+- T6: se agregó `expo-image-picker` (`npx expo install expo-image-picker`, resolvió `~16.0.6` para
+  SDK 52; no agregó configuración nueva a `app.json`, se verificó que el diff quedó vacío) y nuevos
+  `apps/mobile/src/services/mobileContentLogic.ts` (lógica pura: `inferMimeType`, `validateSkillName`,
+  `mapUploadErrorToSpanish`) y `apps/mobile/src/services/mobileContent.ts` (impuro: `fetchMainProductId`,
+  `fetchPhotos`/`fetchVideos`/`fetchSkills`, `uploadMedia`/`deleteMedia` contra la Edge Function
+  `eco-mobile-media-upload`, `addSkill`/`removeSkill` contra las RPC de 0006); nueva
+  `apps/mobile/src/screens/MobileContentScreen.tsx` (tabs Fotos/Videos/Skills con `TabBar`, selector
+  `expo-image-picker`, borrado con ✕, formulario mínimo de descripción/alta de skill); reescrito
+  `apps/mobile/App.tsx` (fase `gestionarContenido` reemplaza el placeholder `Alert` de T5). No hay
+  runner de test de Expo/React Native en este repo (igual que T3-T5); no se inventó ninguno.
+  - Lógica pura (`mobileContentLogic.ts`) verificada con un script throwaway `ts-node` (no commiteado,
+    borrado al terminar): **22/22 aserciones OK** (`inferMimeType` por extensión y kind, `validateSkillName`
+    por longitud/trim, `mapUploadErrorToSpanish` por límite de skills/mensaje verbatim del servidor/error
+    de red/valor no-`Error`).
+  - `npm run typecheck --workspace @eco/mobile`: **0 errores**.
+  - `npx expo export --platform android` (apps/mobile): **éxito**, bundle Android de 692 módulos
+    (`index-c89bf352fb4f9c2b393ddd088c59c89a.hbc`, 2.44 MB), confirma que `expo-image-picker` resuelve
+    correctamente en el grafo de dependencias junto con las pantallas/servicios nuevos.
+  - **No se realizó verificación manual en dispositivo/emulador real** (sin dispositivo disponible en
+    este entorno) — igual que T1-T5, queda explícito y pendiente para T7. En particular no se ejerció
+    interactivamente: el selector real de imagen/video (`ImagePicker.launchImageLibraryAsync`), la subida
+    real de un archivo contra la Edge Function ya desplegada al proyecto migrado
+    (`jtrrqbnxhxxqjcpizjuy`), el borrado de contenido ya subido, ni el alta/baja real de un skill contra
+    `add_mobile_skill`/`delete_mobile_skill`. Este es el riesgo principal a señalar en T7: la UX del
+    selector y la carga real contra producción están sin verificar end-to-end.

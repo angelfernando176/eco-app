@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Alert, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
 import { guardarIngreso, obtenerIngreso, type Ingreso } from './src/db/ingreso'
 import { initLocalDatabase } from './src/db/database'
@@ -9,6 +9,7 @@ import { BusinessFormScreen } from './src/screens/BusinessFormScreen'
 import { BusinessManageScreen } from './src/screens/BusinessManageScreen'
 import { DeactivationSurveyScreen } from './src/screens/DeactivationSurveyScreen'
 import { FirstAccessScreen } from './src/screens/FirstAccessScreen'
+import { MobileContentScreen } from './src/screens/MobileContentScreen'
 import { RegisterMapScreen } from './src/screens/RegisterMapScreen'
 import { SecondAccessScreen } from './src/screens/SecondAccessScreen'
 import { SearchScreen } from './src/screens/SearchScreen'
@@ -27,6 +28,7 @@ type Fase =
   | 'registrarFormulario'
   | 'verNegocio'
   | 'darDeBaja'
+  | 'gestionarContenido'
 
 export default function App() {
   const [fase, setFase] = useState<Fase>('cargando')
@@ -86,7 +88,7 @@ export default function App() {
   }
 
   function handleGestionarContenido() {
-    Alert.alert('Fotos/Videos/Skills', 'Fotos/Videos/Skills — pendiente (T6)')
+    setFase('gestionarContenido')
   }
 
   function handleIniciarRegistro(coords: GeoPoint) {
@@ -170,6 +172,15 @@ export default function App() {
           onDarDeBaja={handleDarDeBaja}
           onGestionarContenido={handleGestionarContenido}
         />
+        <StatusBar style="auto" />
+      </>
+    )
+  }
+
+  if (fase === 'gestionarContenido' && negocio) {
+    return (
+      <>
+        <MobileContentScreen negocio={negocio} onVolver={() => setFase('verNegocio')} />
         <StatusBar style="auto" />
       </>
     )
