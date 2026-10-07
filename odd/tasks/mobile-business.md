@@ -67,7 +67,7 @@
       `deactivate_mobile_business`, `get_mobile_business_status`, `add_mobile_skill`,
       `delete_mobile_skill`), filtro `status='active'` en lecturas públicas relevantes,
       tests pgTAP + corrida en harness Docker (`supabase/tests/harness/run.sh`).
-- [ ] T2 — Edge Function `eco-mobile-media-upload` (POST subir, DELETE borrar) +
+- [x] T2 — Edge Function `eco-mobile-media-upload` (POST subir, DELETE borrar) +
       despliegue y smoke test contra el proyecto real (`jtrrqbnxhxxqjcpizjuy`).
 - [ ] T3 — SQLite móvil: migración v3 (`negocio`, estado pendiente de sync) +
       repositorio `db/negocio.ts` + lógica pura de validación/payloads
@@ -102,3 +102,47 @@
   propios negocios inactivos (verificado en el test pgTAP de la sección 7 de `0006_mobile_business_test.sql`).
 - `npm run typecheck` (mobile, web, shared): 0 errores — sin cambios necesarios en los archivos de
   consulta (el filtro vive solo en RLS).
+- T2: nueva función `supabase/functions/eco-mobile-media-upload/index.ts` (POST subir foto/video,
+  DELETE borrar), reutiliza `adminClient()` de `_shared/auth.ts` y `json`/`HttpError`/`errorResponse`
+  de `_shared/http.ts`. Se amplió `_shared/cors.ts` (`Access-Control-Allow-Methods`) para incluir
+  `DELETE` (se confirmó por grep que las demás funciones solo implementan `POST` y rechazan otros
+  métodos explícitamente, así que ampliar la lista no las afecta).
+  - `deno check`: **no se pudo ejecutar** — no hay binario `deno` disponible en este entorno (`deno`
+    no está en PATH) y no se instaló, según indicación de la tarea. El bundler de
+    `supabase functions deploy` (basado en el mismo motor de Edge Functions) sí compiló y empaquetó
+    el archivo sin errores, lo cual da una señal parcial de corrección de tipos/sintaxis.
+  - Despliegue: `npx --yes supabase functions deploy eco-mobile-media-upload --project-ref
+    jtrrqbnxhxxqjcpizjuy` — **éxito** (la sesión ya estaba logueada/linkeada; se confirmó con
+    `supabase projects list`).
+  - Smoke test end-to-end: **parcial, con hallazgo de infraestructura preexistente**. Se creó un
+    usuario móvil descartable vía `register_mobile_user` (RPC anon, esquema `eco`) — id
+    `292eaa7e-4c38-4618-a839-ab9fc9af1dd1`, `first_name = "T2SmokeTest"` — pero
+    `register_mobile_business` (de 0006) **no existe en el proyecto real**: `migration list` muestra
+    0001-0006 como locales pero con columna `remote` vacía, y una consulta directa confirmó
+    `column businesses.status does not exist` en producción. Es decir, **la migración
+    `0006_mobile_business.sql` (T1) nunca se aplicó al proyecto `jtrrqbnxhxxqjcpizjuy`**, pese a que
+    T1 está marcada como completa (verificada solo contra el harness Docker local). Esto es anterior
+    a esta tarea y queda fuera del alcance/superficie de edición de T2 (no se ejecutó ningún `db
+    push` ni cambio de esquema desde este worker).
+  - Dado ese bloqueo, no se pudo crear el negocio descartable ni ejercer el camino de éxito ni el de
+    rechazo por falta de suscripción contra datos reales. En su lugar se verificó, contra la función
+    ya desplegada:
+    1. Validación de entrada: `POST` con cuerpo `{}` → `400 "El tipo de contenido debe ser \"photo\"
+       o \"video\"."}`.
+    2. `POST` bien formado con un negocio inexistente → `403 "No sos el dueño de este negocio."`
+       (esperado).
+    3. `POST` bien formado con el **owner_id y business_id reales** de un negocio existente en
+       producción (consultado por `select` público, sin mutarlo) → también `403 "No sos el dueño de
+       este negocio."`, lo cual confirma que el `select` a `businesses.status` está fallando
+       silenciosamente (el código trata cualquier error de consulta como "no es el dueño") porque la
+       columna no existe todavía. Esto confirma que el código de la función es correcto respecto al
+       contrato pedido, pero **no podrá completar ningún flujo en producción hasta que se despliegue
+       la migración 0006** (`supabase db push` contra `jtrrqbnxhxxqjcpizjuy`, fuera de la superficie de
+       edición de esta tarea).
+  - Limpieza: el usuario móvil descartable (`292eaa7e-4c38-4618-a839-ab9fc9af1dd1`, "T2SmokeTest")
+    **queda en el proyecto real** — no hay RPC de borrado de usuario móvil accesible con la anon key
+    para revertirlo; requiere borrado manual (service role o SQL directo) por quien administre el
+    proyecto. No se creó ningún negocio descartable (bloqueado antes de ese paso), y no se subió
+    ningún archivo a Storage ni se escribió ninguna fila en `product_images`/`videos`.
+  - **Acción de seguimiento para quien retome T1/T2**: aplicar `0006_mobile_business.sql` al proyecto
+    real antes de repetir el smoke test completo (camino feliz + rechazo por suscripción).
