@@ -51,3 +51,25 @@
 ## Commits
 - `7e59469` tracker · `b1a289c` migración 0005 + harness Docker · `d4097a5` base móvil + sync
 - `737bf8d` búsqueda con mapa · `c73c688` ficha del negocio
+- (pendiente) fix(mobile): pin kotlinVersion via expo-build-properties for EAS build
+
+## Build Android (EAS, ejecutado)
+- Infra confirmada contra el proyecto real `jtrrqbnxhxxqjcpizjuy`: migraciones `0001`-`0005` aplicadas en la nube,
+  Edge Functions `eco-admin-create-user`/`eco-notify-subscription` `ACTIVE`, secretos SMTP/Resend cargados.
+- `apps/mobile/.env` creado por el usuario (Supabase URL/anon key, `EXPO_PUBLIC_ECO_WEB_URL=http://localhost:5173`,
+  Google Maps API key). **No se commitea** (gitignored).
+- EAS: cuenta `angelfernando176`, proyecto `@angelfernando176/eco` inicializado (`app.json` → `extra.eas.projectId`).
+- `apps/mobile/eas.json`: perfil `preview`, `distribution: internal`, `android.buildType: apk`, `environment: production`.
+- **Gotcha crítico**: EAS Build respeta `.gitignore` al armar el archive subido a la nube → el `.env` local **no llega**
+  al builder. Las 4 variables `EXPO_PUBLIC_*` se cargaron directo en EAS (`eas env:create`, environment `production`)
+  para que se embeban en el bundle en build time.
+- **Fallo 1** (`0b41d150`): `EAS_BUILD_UNKNOWN_GRADLE_ERROR` — `expo-modules-core:compileReleaseKotlin FAILED`:
+  "Compose Compiler 1.5.15 requires Kotlin 1.9.25 but found 1.9.24". Preexistente en el proyecto, no causado por
+  la configuración de build.
+- **Fix**: agregada dependencia `expo-build-properties` + plugin en `app.json` fijando `android.kotlinVersion: "1.9.25"`.
+- **Build 2** (`f2b316ca-1611-4494-81f6-7b92effa66d8`): **finished** en ~8 min.
+  APK: https://expo.dev/artifacts/eas/WP-Pl-FtBMvD5W-4n5jO6QGqQnKk9j5jVPGLLRwl9R4.apk
+- Avisos no bloqueantes de `expo-doctor` (no resueltos): `expo-sqlite@15.0.6` (esperada `~15.1.4`),
+  `react-native@0.76.5` (esperada `0.76.9`).
+- **Sigue pendiente**: prueba en dispositivo/emulador real; `EXPO_PUBLIC_ECO_WEB_URL` apunta a `localhost`,
+  no es alcanzable desde un dispositivo físico en otra red.

@@ -14,7 +14,10 @@
     },
     "android": {
       "package": "com.eco.app",
-      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ]
     },
     "plugins": [
       "expo-video",
@@ -23,7 +26,21 @@
         {
           "locationWhenInUsePermission": "ECO usa tu ubicación para mostrarte negocios cercanos en el mapa."
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "1.9.25"
+          }
+        }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "2f31fe21-223c-463c-89ab-03ac42e49bc2"
+      }
+    },
+    "owner": "angelfernando176"
   }
 }
