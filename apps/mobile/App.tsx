@@ -1,20 +1,22 @@
 import { useEffect, useState } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { Alert, StyleSheet, Text, View } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
 import { guardarIngreso, obtenerIngreso, type Ingreso } from './src/db/ingreso'
 import { initLocalDatabase } from './src/db/database'
-import { obtenerNegocioLocal } from './src/db/negocio'
+import { obtenerNegocioLocal, prepararBajaPendiente, type Negocio } from './src/db/negocio'
 import { BusinessDetailScreen } from './src/screens/BusinessDetailScreen'
 import { BusinessFormScreen } from './src/screens/BusinessFormScreen'
+import { BusinessManageScreen } from './src/screens/BusinessManageScreen'
+import { DeactivationSurveyScreen } from './src/screens/DeactivationSurveyScreen'
 import { FirstAccessScreen } from './src/screens/FirstAccessScreen'
 import { RegisterMapScreen } from './src/screens/RegisterMapScreen'
 import { SecondAccessScreen } from './src/screens/SecondAccessScreen'
 import { SearchScreen } from './src/screens/SearchScreen'
 import type { GeoPoint } from './src/services/geo'
+import type { DeactivationReason } from './src/services/mobileBusinessLogic'
 import type { BusinessResult } from './src/services/businessSearchLogic'
 import { syncPending } from './src/services/sync'
-import { Button } from './src/components/Button'
-import { colors, spacing, typography } from './src/theme'
+import { colors } from './src/theme'
 
 type Fase =
   | 'cargando'
@@ -23,7 +25,8 @@ type Fase =
   | 'principal'
   | 'registrarMapa'
   | 'registrarFormulario'
-  | 'verNegocioPlaceholder'
+  | 'verNegocio'
+  | 'darDeBaja'
 
 export default function App() {
   const [fase, setFase] = useState<Fase>('cargando')
@@ -31,6 +34,7 @@ export default function App() {
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessResult | null>(null)
   const [negocioExistente, setNegocioExistente] = useState(false)
   const [coordsRegistro, setCoordsRegistro] = useState<GeoPoint | null>(null)
+  const [negocio, setNegocio] = useState<Negocio | null>(null)
 
   useEffect(() => {
     initLocalDatabase()
@@ -58,7 +62,31 @@ export default function App() {
   }
 
   function handleVerNegocio() {
-    setFase('verNegocioPlaceholder')
+    setNegocio(obtenerNegocioLocal())
+    setFase('verNegocio')
+  }
+
+  function handleNegocioActualizado() {
+    setNegocio(obtenerNegocioLocal())
+    setNegocioExistente(obtenerNegocioLocal() !== null)
+    setFase('segundo')
+  }
+
+  function handleDarDeBaja() {
+    setFase('darDeBaja')
+  }
+
+  async function handleBajaEnviada(reason: DeactivationReason, comment: string) {
+    if (!negocio) return
+    prepararBajaPendiente(negocio.id, reason, comment)
+    await syncPending()
+    setNegocio(obtenerNegocioLocal())
+    setNegocioExistente(obtenerNegocioLocal() !== null)
+    setFase('segundo')
+  }
+
+  function handleGestionarContenido() {
+    Alert.alert('Fotos/Videos/Skills', 'Fotos/Videos/Skills — pendiente (T6)')
   }
 
   function handleIniciarRegistro(coords: GeoPoint) {
@@ -132,13 +160,25 @@ export default function App() {
     )
   }
 
-  if (fase === 'verNegocioPlaceholder') {
+  if (fase === 'verNegocio' && negocio) {
     return (
       <>
-        <View style={styles.container}>
-          <Text style={styles.placeholderText}>Ver negocio — pendiente (T5)</Text>
-          <Button title="‹ Volver" variant="ghost" onPress={() => setFase('segundo')} style={styles.placeholderButton} />
-        </View>
+        <BusinessManageScreen
+          negocio={negocio}
+          onVolver={() => setFase('segundo')}
+          onActualizado={handleNegocioActualizado}
+          onDarDeBaja={handleDarDeBaja}
+          onGestionarContenido={handleGestionarContenido}
+        />
+        <StatusBar style="auto" />
+      </>
+    )
+  }
+
+  if (fase === 'darDeBaja') {
+    return (
+      <>
+        <DeactivationSurveyScreen onEnviado={handleBajaEnviada} onCancel={() => setFase('verNegocio')} />
         <StatusBar style="auto" />
       </>
     )
@@ -168,13 +208,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.white,
     padding: 24,
-  },
-  placeholderText: {
-    fontSize: typography.size.lg,
-    color: colors.gray[700],
-    marginBottom: spacing[4],
-  },
-  placeholderButton: {
-    alignSelf: 'center',
   },
 })

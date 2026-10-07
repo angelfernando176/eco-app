@@ -77,6 +77,19 @@
   owner placeholder sin otro mecanismo de reconciliación, y el spec ya asume que el ingreso se registra
   antes de poder usar la app (ver `App.tsx`: `syncPending()` se dispara en cada arranque con ingreso
   guardado), por lo que este caso debería ser raro (solo sin conexión en el primer arranque).
+- **Sin flujo de reactivación (T5):** un negocio local dado de baja (`status = 'inactive'`) no tiene
+  ningún camino para volver a `active` en este incremento (no está en el requerimiento original). "Ver
+  negocio" para un negocio inactivo se vuelve de solo lectura: muestra sus datos más un `Banner`
+  indicando que fue dado de baja, sin acciones de Guardar/Dar de baja ni gestión de Fotos/Videos/Skills
+  (T6 debe validar `status === 'active'` por su cuenta antes de permitir esas acciones).
+- **Actualización de Latitud/Longitud en "Ver negocio" (T5) por re-lectura de GPS, no edición libre:**
+  el requerimiento original lista Latitud/Longitud como campos "actualizables" en la edición, pero no
+  especifica cómo (texto libre sería inconsistente con el resto del flujo, que siempre deriva las
+  coordenadas de `getCurrentPosition()`, nunca de entrada manual). Se mantienen de solo lectura como en
+  el alta, y se agrega un botón "📍 Actualizar ubicación actual" que vuelve a llamar
+  `getCurrentPosition()` y reemplaza las coordenadas mostradas/enviadas si tiene éxito; si falla, muestra
+  el mensaje de error en español sin bloquear el resto del formulario (el usuario puede seguir editando
+  y guardando los demás campos con las coordenadas anteriores).
 - Nueva Edge Function `eco-mobile-media-upload` (service-role): valida
   `owner_id` (debe ser `type=2`, `status='active'`, dueño del `business_id`) y
   suscripción activa del dueño, sube el archivo a `eco-media` y crea la fila en
@@ -99,7 +112,7 @@
 - [x] T4 — UI de alta: bienvenida con Registrar (expande Teléfono/Computadora),
       mapa + botón iniciar registro, formulario de alta con validación de password,
       indicador de progreso y mensaje de recordatorio.
-- [ ] T5 — UI "Ver negocio": edición de los mismos campos, Dar de baja con encuesta
+- [x] T5 — UI "Ver negocio": edición de los mismos campos, Dar de baja con encuesta
       de motivos fijos + comentario, detección en `App.tsx` de negocio local existente
       para decidir Registrar vs Ver negocio.
 - [ ] T6 — Gestión de Fotos/Videos/Skills desde "Ver negocio" (solo con suscripción
@@ -204,3 +217,27 @@
     de T7. En particular no se ejerció interactivamente: el toggle de expansión Teléfono/Computadora,
     la carga real de `getCurrentPosition()` en `RegisterMapScreen`, el renderizado del `MapView`/`Marker`,
     ni el flujo completo de Guardar en `BusinessFormScreen` contra una base SQLite real.
+- T5: nuevos `apps/mobile/src/screens/BusinessManageScreen.tsx` ("Ver negocio": solo lectura + `Banner`
+  cuando `status === 'inactive'`; campos editables + botón de re-lectura de GPS + Guardar + Dar de baja
+  + botón condicional de Fotos/Videos/Skills cuando `status === 'active'` y
+  `get_mobile_business_status` reporta `has_active_subscription = true` cuando `status === 'active'`)
+  y `apps/mobile/src/screens/DeactivationSurveyScreen.tsx` (selector `Chip` de motivo fijo +
+  comentario opcional, reusa el mismo patrón de `FirstAccessScreen`'s rango de edad); reescrito
+  `apps/mobile/App.tsx` (fases `verNegocioPlaceholder` reemplazada por `verNegocio`/`darDeBaja` reales,
+  estado `negocio: Negocio | null` refrescado desde `obtenerNegocioLocal()` al entrar a "Ver negocio",
+  al guardar una edición y al enviar la encuesta de baja; `onGestionarContenido` muestra un `Alert`
+  placeholder "Fotos/Videos/Skills — pendiente (T6)", igual que T4 dejó el placeholder de T5). No hay
+  runner de test de Expo/React Native en este repo (igual que T3/T4); no se inventó ninguno — se aplicó
+  la misma excepción de test-first documentada en T4 (UI sin runner disponible) y se corrió verificación
+  funcional por typecheck + bundling real.
+  - `npm run typecheck --workspace @eco/mobile`: **0 errores**.
+  - `npx expo export --platform android` (apps/mobile): **éxito**, bundle Android de 685 módulos
+    (`index-b5f6de210372a9feb2bee099f110f586.hbc`, 2.4 MB), confirma que las pantallas nuevas y la
+    llamada a `supabase.rpc('get_mobile_business_status', ...)` compilan y empaquetan sin errores.
+  - **No se realizó verificación manual en dispositivo/emulador real** (sin dispositivo disponible en
+    este entorno) — igual que T1-T4, queda explícito y pendiente para el repaso manual de T7. En
+    particular no se ejerció interactivamente: el toggle de "Confirmar Password" al tipear un password
+    nuevo, el botón "📍 Actualizar ubicación actual", la llamada real a `get_mobile_business_status` contra
+    un negocio sincronizado con/sin suscripción activa, ni el flujo completo de Dar de baja (encuesta →
+    `prepararBajaPendiente` → `syncPending` → negocio inactivo de solo lectura) contra SQLite/Supabase
+    reales.
