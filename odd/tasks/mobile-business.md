@@ -144,5 +144,12 @@
     para revertirlo; requiere borrado manual (service role o SQL directo) por quien administre el
     proyecto. No se creó ningún negocio descartable (bloqueado antes de ese paso), y no se subió
     ningún archivo a Storage ni se escribió ninguna fila en `product_images`/`videos`.
-  - **Acción de seguimiento para quien retome T1/T2**: aplicar `0006_mobile_business.sql` al proyecto
-    real antes de repetir el smoke test completo (camino feliz + rechazo por suscripción).
+  - **Seguimiento (resuelto 2026-10-07):** se repararon los registros de historial 0001-0005 en el
+    proyecto real (`supabase migration repair --status applied 0001 0002 0003 0004 0005` — ya estaban
+    aplicados por fuera del CLI, solo faltaba marcarlos) y luego se aplicó `0006_mobile_business.sql`
+    con `supabase db push --project-ref jtrrqbnxhxxqjcpizjuy` (éxito, confirmado con `migration list`:
+    0001-0006 ahora figuran con `remote` poblado). Se borró el usuario de prueba descartable
+    (`292eaa7e-4c38-4618-a839-ab9fc9af1dd1`, "T2SmokeTest") con `supabase db query --linked` (confirmado
+    con un `select count(*)` posterior = 0). **Pendiente real:** repetir el smoke test del camino feliz
+    de `eco-mobile-media-upload` (alta de negocio + foto/video con suscripción activa) contra el
+    proyecto ya migrado, cuando se pruebe en dispositivo/emulador real (T7).
