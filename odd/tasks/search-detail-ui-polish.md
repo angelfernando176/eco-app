@@ -58,8 +58,15 @@
       negocio/flecha), tabs compactos y profesionales.
 - [x] T3 — `business/MapTab.tsx`: envolver en `ScrollView` para que el botón "Cómo
       llegar" sea visible/alcanzable.
-- [ ] T4 — Verificación: typecheck, `expo export --platform android`.
+- [x] T4 — Verificación: typecheck, `expo export --platform android`.
 - [ ] T5 — Generar APK (EAS build) para pruebas del usuario.
+
+### T4 — Verificación integral final (2026-10-08)
+- `npm run typecheck --workspaces` (mobile, web, shared), re-ejecutado sobre el estado final de la rama
+  (commits `d09fa4f` + `a57559e`): **0 errores**. Ambos workers ya habían verificado typecheck+expo
+  export por separado; esta corrida confirma que no hay conflicto entre sus cambios (T1 tocó
+  `SearchScreen.tsx`+dependencia nueva, T2/T3 tocaron `BusinessDetailScreen.tsx`/`TabBar.tsx`/`MapTab.tsx`,
+  sin superposición de archivos).
 
 ## Commits
 (pendiente)
