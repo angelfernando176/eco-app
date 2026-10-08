@@ -59,7 +59,12 @@
 - [x] T3 — `business/MapTab.tsx`: envolver en `ScrollView` para que el botón "Cómo
       llegar" sea visible/alcanzable.
 - [x] T4 — Verificación: typecheck, `expo export --platform android`.
-- [ ] T5 — Generar APK (EAS build) para pruebas del usuario.
+- [x] T5 — Generar APK (EAS build) para pruebas del usuario.
+
+### T5 — APK generado (2026-10-08)
+- Build EAS `e4c900d3-629c-423e-b030-426a72fd76aa` (perfil `preview`, commit `db322d1`): **FINISHED**.
+  Descargado y reemplazado en `apk/application-eco.apk` (78.5 MB). Link directo:
+  https://expo.dev/artifacts/eas/GH2bm88111QjXnipV4Klw2h08waqRWjrkJfWbwzftag.apk
 
 ### T4 — Verificación integral final (2026-10-08)
 - `npm run typecheck --workspaces` (mobile, web, shared), re-ejecutado sobre el estado final de la rama
