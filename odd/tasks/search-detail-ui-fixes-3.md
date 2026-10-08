@@ -36,7 +36,12 @@ mapa→botón.
       `flexGrow: 0`, `flexShrink: 0`), `alignItems: 'center'` en el contenedor.
 - [x] T2 — `MapTab.tsx`: reducir el `gap` mapa\u2192bot\u00f3n a 2px.
 - [x] T3 — Verificaci\u00f3n: typecheck, `expo export --platform android`.
-- [ ] T4 — Generar APK (EAS build) para pruebas del usuario.
+- [x] T4 — Generar APK (EAS build) para pruebas del usuario.
+
+### T4 — APK generado (2026-10-08)
+- Build EAS `294ae58c-1c83-4c96-8744-6ac1a1f884ec` (perfil `preview`, commit `4d2cfce`):
+  **FINISHED**. Descargado a `C:\data\data\eco\apk\application-eco.apk` (78.5 MB).
+  Link directo: https://expo.dev/artifacts/eas/JbOPT1oyiTujo5eIo0f-tgSmdSiCuOMgtPjwUi8CHaA.apk
 
 ## Commits
 (pendiente)
