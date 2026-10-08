@@ -45,7 +45,7 @@ export function BusinessDetailScreen({ business, onBack }: BusinessDetailScreenP
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.appName}>ECO</Text>
+        <Text style={styles.appName} numberOfLines={1}>ECO</Text>
         <Text style={styles.businessName} numberOfLines={1}>
           {business.tradeName}
         </Text>
@@ -117,7 +117,6 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.gray[200],
   },
   appName: {
-    width: 48,
     fontSize: typography.size['3xl'],
     fontWeight: typography.weight.bold as '700',
     color: colors.brand[700],

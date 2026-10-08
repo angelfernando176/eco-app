@@ -22,7 +22,7 @@ export function MapTab({ business }: MapTabProps) {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
       <View style={styles.mapContainer}>
         <MapView
           style={styles.map}
@@ -47,9 +47,12 @@ export function MapTab({ business }: MapTabProps) {
 }
 
 const styles = StyleSheet.create({
+  scroll: {
+    flex: 1,
+  },
   container: {
     padding: spacing[4],
-    gap: spacing[3],
+    gap: spacing[1],
   },
   mapContainer: {
     height: 260,
@@ -68,6 +71,6 @@ const styles = StyleSheet.create({
     color: colors.gray[600],
   },
   button: {
-    marginTop: spacing[2],
+    marginTop: 0,
   },
 })

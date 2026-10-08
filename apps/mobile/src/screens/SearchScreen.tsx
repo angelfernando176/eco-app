@@ -84,14 +84,13 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
             <View style={styles.searchRow}>
               <View style={styles.searchField}>
                 <TextField
-                  label="Tu búsqueda:"
+                  label="Qué deseas buscar"
                   value={term}
                   onChangeText={setTerm}
                   placeholder="Ej: panadería"
                 />
               </View>
               <View style={styles.radiusField}>
-                <Text style={styles.label}>Radio de búsqueda</Text>
                 <Picker
                   selectedValue={String(radiusKm)}
                   onValueChange={(value) => setRadiusKm(Number(value) as RadiusKm)}
@@ -217,15 +216,9 @@ const styles = StyleSheet.create({
   },
   radiusField: {
     width: 120,
-    gap: spacing[1],
   },
   picker: {
     width: 120,
-  },
-  label: {
-    fontSize: typography.size.sm,
-    color: colors.gray[700],
-    fontWeight: typography.weight.medium as '500',
   },
   button: {
     marginTop: spacing[2],
