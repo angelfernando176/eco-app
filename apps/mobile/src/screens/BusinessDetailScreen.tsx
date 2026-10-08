@@ -7,7 +7,6 @@ import { MenuTab } from './business/MenuTab'
 import { RankingTab } from './business/RankingTab'
 import { RateTab } from './business/RateTab'
 import { VideosTab } from './business/VideosTab'
-import { formatDistance } from '../services/geo'
 import type { BusinessResult } from '../services/businessSearchLogic'
 import { colors, spacing, typography } from '../theme'
 
@@ -46,13 +45,13 @@ export function BusinessDetailScreen({ business, onBack }: BusinessDetailScreenP
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Pressable onPress={onBack} style={styles.backButton} accessibilityRole="button">
-          <Text style={styles.backButtonText}>‹ Volver</Text>
-        </Pressable>
-        <Text style={styles.title} numberOfLines={1}>
+        <Text style={styles.appName}>ECO</Text>
+        <Text style={styles.businessName} numberOfLines={1}>
           {business.tradeName}
         </Text>
-        <Text style={styles.distance}>{formatDistance(business.distanceKm)}</Text>
+        <Pressable onPress={onBack} style={styles.backButton} accessibilityRole="button">
+          <Text style={styles.backButtonText}>→</Text>
+        </Pressable>
       </View>
 
       <TabBar tabs={TABS} activeTab={activeTab} onSelect={handleSelectTab} />
@@ -117,23 +116,28 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.gray[200],
   },
-  backButton: {
-    paddingVertical: spacing[1],
-  },
-  backButtonText: {
-    fontSize: typography.size.base,
-    color: colors.brand[600],
-    fontWeight: typography.weight.semibold as '600',
-  },
-  title: {
-    flex: 1,
-    fontSize: typography.size.lg,
+  appName: {
+    width: 48,
+    fontSize: typography.size['3xl'],
     fontWeight: typography.weight.bold as '700',
     color: colors.brand[700],
   },
-  distance: {
-    fontSize: typography.size.sm,
-    color: colors.gray[500],
+  businessName: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: typography.size.base,
+    fontWeight: typography.weight.semibold as '600',
+    color: colors.gray[900],
+  },
+  backButton: {
+    width: 32,
+    alignItems: 'flex-end',
+    paddingVertical: spacing[1],
+  },
+  backButtonText: {
+    fontSize: typography.size.lg,
+    color: colors.brand[600],
+    fontWeight: typography.weight.semibold as '600',
   },
   content: {
     flex: 1,

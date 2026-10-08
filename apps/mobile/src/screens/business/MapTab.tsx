@@ -1,4 +1,4 @@
-import { Linking, StyleSheet, Text, View } from 'react-native'
+import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native'
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps'
 import { Platform } from 'react-native'
 import { Button } from '../../components/Button'
@@ -22,7 +22,7 @@ export function MapTab({ business }: MapTabProps) {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.mapContainer}>
         <MapView
           style={styles.map}
@@ -42,7 +42,7 @@ export function MapTab({ business }: MapTabProps) {
       </Text>
       {business.reference ? <Text style={styles.reference}>{business.reference}</Text> : null}
       <Button title="Cómo llegar" onPress={handleComoLlegar} style={styles.button} />
-    </View>
+    </ScrollView>
   )
 }
 
