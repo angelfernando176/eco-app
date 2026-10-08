@@ -61,8 +61,14 @@
       reverse geocoding Nominatim con confirmación manual).
 - [x] T5 — Verificación: typecheck (mobile/web/shared), pgTAP si aplica, `expo export
       --platform android`, build web, repaso funcional de los 4 cambios.
-- [ ] T6 — Generar APK actualizado (EAS build) y dejar `apps/web` (dev server)
+- [x] T6 — Generar APK actualizado (EAS build) y dejar `apps/web` (dev server)
       lista para pruebas del usuario.
+
+### T6 — APK y web listos para pruebas (2026-10-07)
+- Build EAS `fd484c7e-2db5-40a7-9cf0-3f5d5124e1c5` (perfil `preview`, commit `8db535c`, incluye T1-T5 de
+  este incremento): **FINISHED**. Descargado y reemplazado en `apk/application-eco.apk` (77 MB).
+- `apps/web`: servidor de desarrollo (`npm run dev`) corriendo en `http://localhost:5173/` (HTTP 200
+  confirmado).
 
 ### T5 — Verificación integral (2026-10-07)
 - `npm run typecheck --workspaces` (mobile, web, shared): **0 errores**.
