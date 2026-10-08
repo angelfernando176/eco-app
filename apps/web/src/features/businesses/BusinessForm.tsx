@@ -8,6 +8,13 @@ import { BUSINESS_FIELD_LIMITS } from './limits'
 import { parseCoordinate, validateBusinessInput, type BusinessFieldErrors } from './rules'
 import type { BusinessInput, WebUserOption } from './types'
 
+interface AddressLookupState {
+  status: 'idle' | 'loading' | 'found' | 'not_found' | 'error'
+  proposedMainStreet?: string | null
+  proposedSecondaryStreet?: string | null
+  message?: string
+}
+
 interface FormState {
   tradeName: string
   ruc: string
@@ -74,6 +81,7 @@ export default function BusinessForm({ profile, isAdmin, plan, business, onCreat
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null)
   const [coordsHelpOpen, setCoordsHelpOpen] = useState(false)
+  const [addressLookup, setAddressLookup] = useState<AddressLookupState>({ status: 'idle' })
 
   const showOwnerPicker = isAdmin && isCreate
 
@@ -99,6 +107,61 @@ export default function BusinessForm({ profile, isAdmin, plan, business, onCreat
 
   function setField<K extends keyof FormState>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  async function handleReviewAddress() {
+    const lat = parseCoordinate(form.latitude)
+    const lon = parseCoordinate(form.longitude)
+
+    if (Number.isNaN(lat) || Number.isNaN(lon)) {
+      setAddressLookup({ status: 'error', message: 'Ingresá latitud y longitud válidas antes de revisar la dirección.' })
+      return
+    }
+
+    window.open(`https://www.google.com/maps?q=${lat},${lon}`, '_blank', 'noopener,noreferrer')
+
+    setAddressLookup({ status: 'loading' })
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&addressdetails=1&email=soporte@eco.app`,
+      )
+      if (!response.ok) {
+        setAddressLookup({
+          status: 'error',
+          message: 'No se pudo consultar la dirección (sin conexión o límite de uso alcanzado). Podés revisar el mapa manualmente.',
+        })
+        return
+      }
+      const data = await response.json()
+      const address = data?.address ?? {}
+      const proposedMainStreet = address.road ?? address.pedestrian ?? address.residential ?? null
+      const proposedSecondaryStreet = address.neighbourhood ?? address.suburb ?? address.quarter ?? null
+
+      if (!proposedMainStreet && !proposedSecondaryStreet) {
+        setAddressLookup({
+          status: 'not_found',
+          message: 'No se pudo determinar la dirección automáticamente desde el mapa. Revisá el mapa manualmente.',
+        })
+        return
+      }
+
+      setAddressLookup({ status: 'found', proposedMainStreet, proposedSecondaryStreet })
+    } catch {
+      setAddressLookup({
+        status: 'error',
+        message: 'No se pudo consultar la dirección (sin conexión o límite de uso alcanzado). Podés revisar el mapa manualmente.',
+      })
+    }
+  }
+
+  function applyAddressLookup() {
+    if (addressLookup.proposedMainStreet) setField('mainStreet', addressLookup.proposedMainStreet)
+    if (addressLookup.proposedSecondaryStreet) setField('secondaryStreet', addressLookup.proposedSecondaryStreet)
+    setAddressLookup({ status: 'idle' })
+  }
+
+  function discardAddressLookup() {
+    setAddressLookup({ status: 'idle' })
   }
 
   function handleRucChange(event: ChangeEvent<HTMLInputElement>) {
@@ -255,6 +318,36 @@ export default function BusinessForm({ profile, isAdmin, plan, business, onCreat
             >
               ¿?
             </button>
+          </div>
+          <div className="field--full-width">
+            <Button
+              type="button"
+              variant="secondary"
+              loading={addressLookup.status === 'loading'}
+              onClick={handleReviewAddress}
+            >
+              {addressLookup.status === 'loading' ? 'Buscando…' : 'Revisar dirección'}
+            </Button>
+            {addressLookup.status === 'error' && (
+              <Alert tone="error">{addressLookup.message}</Alert>
+            )}
+            {addressLookup.status === 'not_found' && (
+              <Alert tone="error">{addressLookup.message}</Alert>
+            )}
+            {addressLookup.status === 'found' && (
+              <Alert tone="success">
+                Dirección sugerida: {addressLookup.proposedMainStreet ?? '—'}
+                {addressLookup.proposedSecondaryStreet ? ` / ${addressLookup.proposedSecondaryStreet}` : ''}
+                <div className="cluster">
+                  <Button type="button" variant="secondary" onClick={applyAddressLookup}>
+                    Aplicar sugerencia
+                  </Button>
+                  <Button type="button" variant="ghost" onClick={discardAddressLookup}>
+                    Descartar
+                  </Button>
+                </div>
+              </Alert>
+            )}
           </div>
           <Field
             label="Calle principal"
