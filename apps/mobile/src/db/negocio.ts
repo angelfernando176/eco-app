@@ -17,6 +17,7 @@ export interface Negocio {
   pendingAction: 'create' | 'update' | 'deactivate' | null
   pendingReason: string | null
   pendingComment: string | null
+  pendingSkillName: string | null
   syncedAt: string | null
   createdAt: string
   updatedAt: string
@@ -32,6 +33,7 @@ export interface NuevoNegocio {
   productName: string
   productPrice: number
   password: string
+  skillName?: string
 }
 
 export interface NegocioPatch {
@@ -61,6 +63,7 @@ interface NegocioRow {
   pending_action: 'create' | 'update' | 'deactivate' | null
   pending_reason: string | null
   pending_comment: string | null
+  pending_skill_name: string | null
   synced_at: string | null
   created_at: string
   updated_at: string
@@ -83,6 +86,7 @@ function mapRow(row: NegocioRow): Negocio {
     pendingAction: row.pending_action,
     pendingReason: row.pending_reason,
     pendingComment: row.pending_comment,
+    pendingSkillName: row.pending_skill_name,
     syncedAt: row.synced_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -93,7 +97,7 @@ export function obtenerNegocioLocal(): Negocio | null {
   const row = db.getFirstSync<NegocioRow>(
     `SELECT id, remote_id, owner_remote_id, trade_name, ruc, phone, latitude, longitude,
             product_name, product_price, password, status, pending_action, pending_reason,
-            pending_comment, synced_at, created_at, updated_at
+            pending_comment, pending_skill_name, synced_at, created_at, updated_at
      FROM negocio ORDER BY id DESC LIMIT 1`
   )
   return row ? mapRow(row) : null
@@ -103,8 +107,8 @@ export function crearNegocioPendiente(input: NuevoNegocio): void {
   db.runSync(
     `INSERT INTO negocio (
        owner_remote_id, trade_name, ruc, phone, latitude, longitude,
-       product_name, product_price, password, status, pending_action
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'create')`,
+       product_name, product_price, password, pending_skill_name, status, pending_action
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'create')`,
     [
       input.ownerRemoteId,
       input.tradeName,
@@ -115,6 +119,7 @@ export function crearNegocioPendiente(input: NuevoNegocio): void {
       input.productName,
       input.productPrice,
       input.password,
+      input.skillName ? input.skillName : null,
     ]
   )
 }
@@ -194,4 +199,8 @@ export function marcarBajaSincronizada(id: number): void {
     "UPDATE negocio SET pending_action = NULL, pending_reason = NULL, pending_comment = NULL, synced_at = datetime('now') WHERE id = ?",
     [id]
   )
+}
+
+export function marcarSkillSincronizado(id: number): void {
+  db.runSync('UPDATE negocio SET pending_skill_name = NULL WHERE id = ?', [id])
 }

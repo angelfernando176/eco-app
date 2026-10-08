@@ -40,6 +40,7 @@ export function BusinessFormScreen({
   const [ruc, setRuc] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [skillName, setSkillName] = useState('')
   const [errors, setErrors] = useState<BusinessFieldError[]>([])
   const [guardando, setGuardando] = useState(false)
   const [aviso, setAviso] = useState<string | null>(null)
@@ -54,6 +55,7 @@ export function BusinessFormScreen({
       productPrice: parsedPrice,
       password,
       confirmPassword,
+      skillName,
     }
 
     const validationErrors = validateBusinessInput(input)
@@ -80,6 +82,7 @@ export function BusinessFormScreen({
       productName: productName.trim(),
       productPrice: parsedPrice,
       password,
+      skillName: skillName.trim() || undefined,
     })
 
     Alert.alert(
@@ -175,6 +178,14 @@ export function BusinessFormScreen({
         placeholder="Confirmar password"
         secureTextEntry
         error={errorFor(errors, 'confirmPassword')}
+      />
+
+      <TextField
+        label="Skill (opcional)"
+        value={skillName}
+        onChangeText={setSkillName}
+        placeholder="Ej: delivery, panadería artesanal"
+        error={errorFor(errors, 'skillName')}
       />
 
       <Button title="Guardar" onPress={handleGuardar} loading={guardando} style={styles.saveButton} />

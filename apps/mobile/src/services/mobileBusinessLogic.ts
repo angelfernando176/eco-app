@@ -4,6 +4,8 @@
  * Expo/React Native. Mirrors syncLogic.ts.
  */
 
+import { validateSkillName } from './mobileContentLogic'
+
 export { isPermanentRejection, mapSyncErrorToSpanish } from './syncLogic'
 
 export const DEACTIVATION_REASONS = [
@@ -23,6 +25,7 @@ export interface BusinessFormInput {
   productPrice: number
   password: string
   confirmPassword: string
+  skillName?: string
 }
 
 export interface BusinessEditInput {
@@ -36,7 +39,7 @@ export interface BusinessEditInput {
 }
 
 export interface BusinessFieldError {
-  field: 'tradeName' | 'ruc' | 'phone' | 'productName' | 'productPrice' | 'password' | 'confirmPassword'
+  field: 'tradeName' | 'ruc' | 'phone' | 'productName' | 'productPrice' | 'password' | 'confirmPassword' | 'skillName'
   message: string
 }
 
@@ -82,6 +85,13 @@ export function validateBusinessInput(input: BusinessFormInput | BusinessEditInp
     }
     if (input.confirmPassword !== input.password) {
       errors.push({ field: 'confirmPassword', message: 'Las contraseñas no coinciden.' })
+    }
+  }
+
+  if ('skillName' in input && input.skillName && input.skillName.trim().length > 0) {
+    const skillError = validateSkillName(input.skillName)
+    if (skillError) {
+      errors.push({ field: 'skillName', message: skillError })
     }
   }
 

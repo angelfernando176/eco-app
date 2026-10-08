@@ -3,6 +3,7 @@ import {
   marcarAltaSincronizada,
   marcarActualizacionSincronizada,
   marcarBajaSincronizada,
+  marcarSkillSincronizado,
   obtenerNegocioLocal,
 } from '../db/negocio'
 import {
@@ -21,6 +22,22 @@ export interface BusinessSyncResult {
   error?: string
 }
 
+/** Best-effort retry of a pending skill add; never throws, never fails the caller's result. */
+async function retryPendingSkill(negocio: { id: number; remoteId: string | null; pendingSkillName: string | null }, ownerRemoteId: string): Promise<void> {
+  if (!supabase || !negocio.remoteId || !negocio.pendingSkillName) return
+  try {
+    const { error } = await supabase.rpc('add_mobile_skill', {
+      p_business_id: negocio.remoteId,
+      p_owner_id: ownerRemoteId,
+      p_name: negocio.pendingSkillName,
+    })
+    if (error) return
+    marcarSkillSincronizado(negocio.id)
+  } catch {
+    // Leave pending_skill_name set so it retries on the next syncPending() call.
+  }
+}
+
 /**
  * Pushes the single local pending negocio (create/update/deactivate) to
  * Supabase. Never throws; safe to call repeatedly.
@@ -34,6 +51,7 @@ export async function syncNegocioPendiente(ownerRemoteId: string): Promise<Busin
   const action = decideBusinessSyncAction({ pendingAction: negocio.pendingAction, remoteId: negocio.remoteId })
 
   if (action === 'none') {
+    await retryPendingSkill(negocio, ownerRemoteId)
     return { action, ok: true }
   }
 
@@ -57,6 +75,9 @@ export async function syncNegocioPendiente(ownerRemoteId: string): Promise<Busin
       const { data, error } = await supabase.rpc('register_mobile_business', payload)
       if (error) throw error
       marcarAltaSincronizada(negocio.id, data as string)
+      if (negocio.pendingSkillName) {
+        await retryPendingSkill({ id: negocio.id, remoteId: data as string, pendingSkillName: negocio.pendingSkillName }, ownerRemoteId)
+      }
       return { action, ok: true }
     }
 
@@ -80,6 +101,7 @@ export async function syncNegocioPendiente(ownerRemoteId: string): Promise<Busin
       const { error } = await supabase.rpc('update_mobile_business', payload)
       if (error) throw error
       marcarActualizacionSincronizada(negocio.id)
+      await retryPendingSkill(negocio, ownerRemoteId)
       return { action, ok: true }
     }
 
@@ -92,6 +114,7 @@ export async function syncNegocioPendiente(ownerRemoteId: string): Promise<Busin
     const { error } = await supabase.rpc('deactivate_mobile_business', payload)
     if (error) throw error
     marcarBajaSincronizada(negocio.id)
+    await retryPendingSkill(negocio, ownerRemoteId)
     return { action, ok: true }
   } catch (err) {
     return { action, ok: false, error: mapSyncErrorToSpanish(err) }

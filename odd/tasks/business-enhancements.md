@@ -51,7 +51,7 @@
 - Ningún cambio de esquema Supabase (no hay migración 0007 en este incremento).
 
 ## Tareas
-- [ ] T1 — Mobile: SQLite v4 (`pending_skill_name`), campo Skill opcional en
+- [x] T1 — Mobile: SQLite v4 (`pending_skill_name`), campo Skill opcional en
       `BusinessFormScreen`, cadena de sync en `businessSync.ts`/`db/negocio.ts`.
 - [x] T2 — Mobile: búsqueda por producto principal (`businessSearch.ts` +
       `businessSearchLogic.ts`), tercer `rowSet`.
@@ -102,4 +102,28 @@
   `apps/mobile/package.json`, sin script `test`); se usa typecheck + bundling
   como patrón ya establecido para mobile en este proyecto.
 
-(resto pendiente para T1/T5/T6)
+### T1 — Skill opcional en alta de negocio (2026-10-07)
+- Cambios: migración SQLite v4 (`apps/mobile/src/db/migrations.ts`, `ALTER TABLE negocio ADD COLUMN
+  pending_skill_name TEXT;`); `apps/mobile/src/db/negocio.ts` (`Negocio.pendingSkillName`,
+  `NuevoNegocio.skillName?`, mapeo en `mapRow`/`obtenerNegocioLocal`/`crearNegocioPendiente`, nueva
+  `marcarSkillSincronizado(id)`); `apps/mobile/src/services/mobileBusinessLogic.ts`
+  (`BusinessFormInput.skillName?`, campo `'skillName'` en `BusinessFieldError`, validación opcional
+  reusando `validateSkillName` de `mobileContentLogic.ts`); `apps/mobile/src/screens/
+  BusinessFormScreen.tsx` (campo `TextField` "Skill (opcional)"); `apps/mobile/src/services/
+  businessSync.ts` (`retryPendingSkill` llamado tras `register`/`update`/`deactivate` exitosos y
+  también cuando `action === 'none'` pero queda un `pending_skill_name` sin sincronizar; nunca lanza,
+  nunca hace fallar el resultado de sync del negocio).
+- `npm run typecheck --workspace @eco/mobile`: **0 errores**.
+- Lógica pura de validación (`validateBusinessInput` con `skillName`) verificada con un script
+  throwaway `ts-node` (no commiteado, borrado al terminar): **9/9 aserciones OK** (sin campo, vacío,
+  solo espacios, válido, 51 caracteres, exactamente 50 caracteres, error combinado con otro campo
+  inválido, y `BusinessEditInput` sin `skillName` sigue validando limpio).
+- `marcarSkillSincronizado`/`retryPendingSkill` dependen de `expo-sqlite`/`@supabase/supabase-js` y no
+  se pudieron ejercer fuera de un entorno Expo real (misma limitación documentada para
+  `db/negocio.ts`/`businessSync.ts` en T3 de `mobile-business.md`); quedan sin verificación de
+  ejecución hasta una prueba manual en dispositivo/emulador.
+- `npx expo export --platform android` (apps/mobile): **éxito**, bundle Android de 692 módulos
+  (`index-534783e21045d3fa8eeceefcaef2fd3f.hbc`, 2.44 MB), confirma que el grafo de dependencias
+  (incluyendo el nuevo campo y la cadena de sync) compila y empaqueta sin errores.
+
+(resto pendiente para T5/T6)

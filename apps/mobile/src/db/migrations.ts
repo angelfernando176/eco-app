@@ -70,6 +70,10 @@ export const MIGRATIONS: Migration[] = [
       );`,
     ],
   },
+  {
+    version: 4,
+    statements: [`ALTER TABLE negocio ADD COLUMN pending_skill_name TEXT;`],
+  },
 ]
 
 export function pendingMigrations(currentVersion: number): Migration[] {
