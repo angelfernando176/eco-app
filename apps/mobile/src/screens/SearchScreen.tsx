@@ -5,6 +5,7 @@ import { Banner } from '../components/Banner'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { Chip } from '../components/Chip'
+import { RadarLoading } from '../components/RadarLoading'
 import { TextField } from '../components/TextField'
 import { googleMapsApiKey } from '../config'
 import { guardarBusqueda } from '../db/busquedas'
@@ -104,6 +105,13 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
               </View>
             ) : null}
 
+            {status === 'loading' ? (
+              <View style={styles.radarContainer}>
+                <RadarLoading />
+                <Text style={styles.radarCaption}>Buscando negocios cerca tuyo…</Text>
+              </View>
+            ) : null}
+
             {status === 'empty' ? (
               <View style={styles.banner}>
                 <Banner variant="info" message="No encontramos negocios en ese radio. Prueba con uno mayor." />
@@ -197,6 +205,15 @@ const styles = StyleSheet.create({
   },
   banner: {
     gap: spacing[2],
+  },
+  radarContainer: {
+    alignItems: 'center',
+    gap: spacing[3],
+    paddingVertical: spacing[6],
+  },
+  radarCaption: {
+    fontSize: typography.size.sm,
+    color: colors.gray[600],
   },
   retryButton: {
     alignSelf: 'flex-start',

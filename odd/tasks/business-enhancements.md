@@ -53,9 +53,9 @@
 ## Tareas
 - [ ] T1 — Mobile: SQLite v4 (`pending_skill_name`), campo Skill opcional en
       `BusinessFormScreen`, cadena de sync en `businessSync.ts`/`db/negocio.ts`.
-- [ ] T2 — Mobile: búsqueda por producto principal (`businessSearch.ts` +
+- [x] T2 — Mobile: búsqueda por producto principal (`businessSearch.ts` +
       `businessSearchLogic.ts`), tercer `rowSet`.
-- [ ] T3 — Mobile: `RadarLoading.tsx` + integración en `SearchScreen` durante
+- [x] T3 — Mobile: `RadarLoading.tsx` + integración en `SearchScreen` durante
       `status === 'loading'`.
 - [x] T4 — Web: botón "Revisar dirección" en `BusinessForm.tsx` (abre Maps +
       reverse geocoding Nominatim con confirmación manual).
@@ -78,4 +78,28 @@
   por typecheck + build y repaso manual de la lógica (sin golpear la API real de
   Nominatim desde un test automatizado, ya que es una llamada de red a un tercero
   que el usuario ejercitará manualmente).
-(resto pendiente para T1/T2/T3/T5/T6)
+### T2 — Mobile: búsqueda por producto (tercer `rowSet`)
+- Tercer `rowSet` agregado en `businessSearch.ts`: `products.name ilike` (sin
+  filtrar por `is_primary`, cualquier producto del negocio que matchee cuenta,
+  igual al patrón de `skills`), mismo `ROW_LIMIT`, mismo bounding-box, mismo
+  `BUSINESS_COLUMNS`, mensaje de error "No se pudo buscar por producto: ...".
+  Reusa `mergeBusinessResults` sin cambios en `businessSearchLogic.ts` (ya acepta
+  N row sets). No hay Supabase en vivo en este entorno; verificado por lectura y
+  razonamiento sobre el patrón idéntico ya existente (mismo riesgo ya aceptado
+  para el branch de `skills`). `npm run typecheck --workspace @eco/mobile`: 0
+  errores.
+
+### T3 — Mobile: `RadarLoading.tsx` + integración en `SearchScreen`
+- `RadarLoading.tsx` nuevo (export nombrado, `StyleSheet`, tokens de `theme.ts`,
+  mismo patrón que `Banner.tsx`/`Card.tsx`): `Animated.loop` con rotación
+  0→360° continua (sweep) + pulso de escala/opacidad, limpieza con `.stop()` en
+  el cleanup de `useEffect`. Integrado en `SearchScreen.tsx`: se muestra
+  centrado con el texto "Buscando negocios cerca tuyo…" mientras
+  `status === 'loading'`, sin tocar el `loading` propio del botón "Buscar".
+  `npm run typecheck --workspace @eco/mobile`: 0 errores. `npx expo export
+  --platform android` (desde `apps/mobile`): éxito, 693 módulos, bundle 2.45 MB.
+  No existe runner de tests de componentes RN en este repo (confirmado en
+  `apps/mobile/package.json`, sin script `test`); se usa typecheck + bundling
+  como patrón ya establecido para mobile en este proyecto.
+
+(resto pendiente para T1/T5/T6)

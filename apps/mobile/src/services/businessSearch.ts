@@ -70,6 +70,36 @@ export async function searchBusinesses({ center, radiusKm, term }: SearchBusines
 
       rowSets.push((bySkillRows ?? []) as BusinessRow[])
     }
+
+    const { data: productRows, error: productError } = await supabase
+      .from('products')
+      .select('business_id')
+      .ilike('name', `%${sanitizedTerm}%`)
+      .limit(ROW_LIMIT)
+
+    if (productError) {
+      throw new Error(`No se pudo buscar por producto: ${productError.message}`)
+    }
+
+    const productBusinessIds = [...new Set((productRows ?? []).map((row) => row.business_id as string))]
+
+    if (productBusinessIds.length > 0) {
+      const { data: byProductRows, error: byProductError } = await supabase
+        .from('businesses')
+        .select(BUSINESS_COLUMNS)
+        .in('id', productBusinessIds)
+        .gte('latitude', box.minLat)
+        .lte('latitude', box.maxLat)
+        .gte('longitude', box.minLon)
+        .lte('longitude', box.maxLon)
+        .limit(ROW_LIMIT)
+
+      if (byProductError) {
+        throw new Error(`No se pudo buscar por producto: ${byProductError.message}`)
+      }
+
+      rowSets.push((byProductRows ?? []) as BusinessRow[])
+    }
   }
 
   return mergeBusinessResults(rowSets, center, radiusKm)
