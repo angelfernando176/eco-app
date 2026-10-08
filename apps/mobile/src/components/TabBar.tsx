@@ -9,7 +9,12 @@ export interface TabBarProps<T extends string> {
 
 export function TabBar<T extends string>({ tabs, activeTab, onSelect }: TabBarProps<T>) {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.container}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.bar}
+      contentContainerStyle={styles.container}
+    >
       {tabs.map((tab) => {
         const selected = tab.key === activeTab
         return (
@@ -29,7 +34,14 @@ export function TabBar<T extends string>({ tabs, activeTab, onSelect }: TabBarPr
 }
 
 const styles = StyleSheet.create({
+  bar: {
+    flexGrow: 0,
+    flexShrink: 0,
+    height: 44,
+  },
   container: {
+    flexGrow: 1,
+    alignItems: 'center',
     gap: spacing[4],
     paddingHorizontal: spacing[4],
     borderBottomWidth: 1,

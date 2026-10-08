@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: spacing[4],
-    gap: spacing[1],
+    gap: 2,
   },
   mapContainer: {
     height: 260,
