@@ -1,10 +1,10 @@
+import { Picker } from '@react-native-picker/picker'
 import { useState } from 'react'
-import { FlatList, Platform, StyleSheet, Text, View } from 'react-native'
+import { FlatList, Platform, Pressable, StyleSheet, Text, View } from 'react-native'
 import MapView, { Circle, Marker, PROVIDER_GOOGLE } from 'react-native-maps'
 import { Banner } from '../components/Banner'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
-import { Chip } from '../components/Chip'
 import { RadarLoading } from '../components/RadarLoading'
 import { TextField } from '../components/TextField'
 import { googleMapsApiKey } from '../config'
@@ -74,26 +74,34 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text style={styles.title}>ECO</Text>
-            <Text style={styles.greeting}>Hola{nombre ? `, ${nombre}` : ''}. ¿Qué negocio buscas?</Text>
+            <View style={styles.headerRow}>
+              <Text style={styles.title}>ECO</Text>
+              <Text style={styles.greeting} numberOfLines={1} ellipsizeMode="tail">
+                Hola{nombre ? `, ${nombre}` : ''}. ¿Qué negocio buscas?
+              </Text>
+            </View>
 
-            <TextField
-              label="Nombre o palabra clave"
-              value={term}
-              onChangeText={setTerm}
-              placeholder="Ej: panadería"
-            />
-
-            <Text style={styles.label}>Radio de búsqueda</Text>
-            <View style={styles.chips}>
-              {RADIUS_OPTIONS_KM.map((option) => (
-                <Chip
-                  key={option}
-                  label={`${option} km`}
-                  selected={radiusKm === option}
-                  onPress={() => setRadiusKm(option)}
+            <View style={styles.searchRow}>
+              <View style={styles.searchField}>
+                <TextField
+                  label="Tu búsqueda:"
+                  value={term}
+                  onChangeText={setTerm}
+                  placeholder="Ej: panadería"
                 />
-              ))}
+              </View>
+              <View style={styles.radiusField}>
+                <Text style={styles.label}>Radio de búsqueda</Text>
+                <Picker
+                  selectedValue={String(radiusKm)}
+                  onValueChange={(value) => setRadiusKm(Number(value) as RadiusKm)}
+                  style={styles.picker}
+                >
+                  {RADIUS_OPTIONS_KM.map((option) => (
+                    <Picker.Item key={option} label={`${option} km`} value={String(option)} />
+                  ))}
+                </Picker>
+              </View>
             </View>
 
             <Button title="Buscar" onPress={handleBuscar} loading={status === 'loading'} style={styles.button} />
@@ -152,15 +160,19 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
           </View>
         }
         renderItem={({ item }) => (
-          <Card style={styles.resultCard}>
-            <Text style={styles.resultName} onPress={() => onSelectBusiness(item)}>
-              {item.tradeName}
-            </Text>
-            <Text style={styles.resultAddress}>
-              {item.mainStreet} {item.number}, {item.secondaryStreet}
-            </Text>
-            <Text style={styles.resultDistance}>{formatDistance(item.distanceKm)}</Text>
-          </Card>
+          <Pressable onPress={() => onSelectBusiness(item)}>
+            <Card style={styles.resultCard}>
+              <Text style={styles.resultName} numberOfLines={1} ellipsizeMode="tail">
+                {item.tradeName}
+              </Text>
+              <Text style={styles.resultPhone} numberOfLines={1} ellipsizeMode="tail">
+                {item.phone}
+              </Text>
+              <Text style={styles.resultDistance} numberOfLines={1}>
+                {formatDistance(item.distanceKm)}
+              </Text>
+            </Card>
+          </Pressable>
         )}
         contentContainerStyle={styles.listContent}
       />
@@ -180,25 +192,40 @@ const styles = StyleSheet.create({
   header: {
     gap: spacing[3],
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: spacing[2],
+  },
   title: {
     fontSize: typography.size['3xl'],
     fontWeight: typography.weight.bold as '700',
     color: colors.brand[700],
   },
   greeting: {
-    fontSize: typography.size.base,
-    color: colors.gray[700],
-    marginBottom: spacing[2],
+    flex: 1,
+    fontSize: typography.size.sm,
+    color: colors.gray[600],
+  },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: spacing[3],
+  },
+  searchField: {
+    flex: 1,
+  },
+  radiusField: {
+    width: 120,
+    gap: spacing[1],
+  },
+  picker: {
+    width: 120,
   },
   label: {
     fontSize: typography.size.sm,
     color: colors.gray[700],
     fontWeight: typography.weight.medium as '500',
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing[2],
   },
   button: {
     marginTop: spacing[2],
@@ -219,7 +246,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   mapContainer: {
-    height: 260,
+    height: 360,
     borderRadius: radius.lg,
     overflow: 'hidden',
   },
@@ -231,18 +258,24 @@ const styles = StyleSheet.create({
     color: colors.gray[600],
   },
   resultCard: {
-    gap: spacing[1],
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
   },
   resultName: {
-    fontSize: typography.size.lg,
+    flex: 2,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold as '600',
     color: colors.brand[700],
   },
-  resultAddress: {
+  resultPhone: {
+    flex: 1,
     fontSize: typography.size.sm,
     color: colors.gray[700],
   },
   resultDistance: {
+    width: 60,
+    textAlign: 'right',
     fontSize: typography.size.sm,
     color: colors.gray[500],
   },

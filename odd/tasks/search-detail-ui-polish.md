@@ -51,7 +51,7 @@
   visible — esto es un fix de bug, no un cambio de diseño.
 
 ## Tareas
-- [ ] T1 — `SearchScreen.tsx`: header ECO+saludo en una línea, label "Tu búsqueda:",
+- [x] T1 — `SearchScreen.tsx`: header ECO+saludo en una línea, label "Tu búsqueda:",
       fila búsqueda+radio en una línea con picker nuevo, mapa agrandado, fila de
       resultado con nombre/teléfono/distancia alineados.
 - [x] T2 — `BusinessDetailScreen.tsx` + `TabBar.tsx`: header rediseñado (ECO/nombre
@@ -66,6 +66,21 @@
 
 ## Verificación
 (pendiente)
+
+### T1
+- Dependencia agregada vía `npx expo install @react-native-picker/picker` en
+  `apps/mobile` → resolvió `@react-native-picker/picker@2.9.0` (SDK 52 compatible),
+  sin fijar versión a mano. Solo tocó `apps/mobile/package.json` y el `package-lock.json`
+  raíz del monorepo (workspaces npm: no existe un lockfile separado dentro de
+  `apps/mobile`, el lockfile único vive en la raíz del repo); `app.json` no requirió
+  cambios.
+- `npm run typecheck --workspace @eco/mobile`: 0 errores.
+- `npx expo export --platform android` (en `apps/mobile`): bundling exitoso, 702
+  módulos (`index-05855d60f83d87b1dc596a279a81188c.hbc`, 2.46 MB) — confirma que la
+  nueva dependencia del Picker resuelve y empaqueta correctamente.
+- No existe runner de tests de componentes RN en este repo (sin script `test` en
+  `apps/mobile/package.json`); verificación realizada vía typecheck + bundling, mismo
+  precedente que T2/T3.
 
 ### T2/T3
 - `npm run typecheck --workspace @eco/mobile`: 0 errores.
