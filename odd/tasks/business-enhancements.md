@@ -59,10 +59,22 @@
       `status === 'loading'`.
 - [x] T4 — Web: botón "Revisar dirección" en `BusinessForm.tsx` (abre Maps +
       reverse geocoding Nominatim con confirmación manual).
-- [ ] T5 — Verificación: typecheck (mobile/web/shared), pgTAP si aplica, `expo export
+- [x] T5 — Verificación: typecheck (mobile/web/shared), pgTAP si aplica, `expo export
       --platform android`, build web, repaso funcional de los 4 cambios.
 - [ ] T6 — Generar APK actualizado (EAS build) y dejar `apps/web` (dev server)
       lista para pruebas del usuario.
+
+### T5 — Verificación integral (2026-10-07)
+- `npm run typecheck --workspaces` (mobile, web, shared): **0 errores**.
+- `npx expo export --platform android` (apps/mobile): **éxito**, 693 módulos, bundle 2.45 MB.
+- `npm run build --workspace @eco/web`: **éxito**, 119 módulos, `dist/` generado.
+- Harness Docker pgTAP (0001-0006): **no se pudo correr** — Docker Desktop no estaba corriendo. Este
+  incremento no agrega ninguna migración de Supabase (sin cambios de esquema), por lo que este chequeo
+  era solo de regresión; queda pendiente de correr manualmente si se quiere confirmar que nada se rompió,
+  pero no bloquea el cierre de este incremento.
+- Barrido de secretos en el diff `feat/mobile-business...feat/business-enhancements` (10 archivos,
+  423 inserciones): sin credenciales expuestas (el único hallazgo fue la referencia preexistente
+  `googleMapsApiKey`, sin valor literal en el diff).
 
 ## Commits
 (pendiente)
