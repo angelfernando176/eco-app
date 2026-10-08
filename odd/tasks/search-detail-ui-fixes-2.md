@@ -42,7 +42,11 @@ e) Pantalla de búsqueda: el label "Radio de búsqueda" (arriba del picker) debe
       label "Radio de búsqueda" (el picker queda sin texto encima).
 - [x] T4 — Verificación: typecheck, `expo export --platform android`, repaso visual
       del fix de ScrollView (razonamiento de layout, sin dispositivo).
-- [ ] T5 — Generar APK (EAS build) para pruebas del usuario.
+- [x] T5 — Generar APK (EAS build) para pruebas del usuario.
+
+### T5 — APK generado (2026-10-08)
+- Build EAS `fd632a28-3fc4-4263-9ba2-62b09b187178` (perfil `preview`, commit `36b9bde`):
+  **FINISHED**. Link directo: https://expo.dev/artifacts/eas/0inb96nLA_3CmeFd3kgxogqy8N5qI2IEOkVUhFlQgqY.apk
 
 ### T1-T4 — Implementación y verificación (2026-10-08)
 - `MapTab.tsx`: `ScrollView` ahora tiene `style={styles.scroll}` (`{flex:1}`) además de
