@@ -36,10 +36,16 @@ de casa/Volver debe aparecer una puerta pequeña + "Salir" (cierra la app).
       `SearchScreen.tsx` (título "ECO" inline) para no duplicar.
 - [x] T4 — Verificación: `npm run typecheck --workspaces`,
       `npx expo export --platform android`.
-- [ ] T5 — Generar APK (EAS build) para pruebas del usuario.
+- [x] T5 — Generar APK (EAS build) para pruebas del usuario.
+
+### T5 — APK generado (2026-10-12)
+- Build EAS `5f52a1cb-323d-477f-8430-dc55ca4bf109` (perfil `preview`, commit
+  `ca990ea`): **FINISHED**. Descargado a
+  `C:\data\data\eco\apk\application-eco.apk` (74.85 MB).
+  Link directo: https://expo.dev/artifacts/eas/lw2W4-hVLVyrnjbtVGo3Q1nCiw3hXyvOcfAdEfLFSFw.apk
 
 ## Commits
-(pendiente)
+- ca990ea feat(mobile): add shared AppHeader (ECO + volver/salir) across screens
 
 ## Verificación
 - `npm run typecheck --workspaces`: 0 errores.
