@@ -39,10 +39,16 @@ pantalla, agregar:
       ingresada junto a la búsqueda (migración SQLite local si aplica).
 - [x] T4 — Verificación: `npm run typecheck --workspaces`,
       `npx expo export --platform android`.
-- [ ] T5 — Generar APK (EAS build) para pruebas del usuario.
+- [x] T5 — Generar APK (EAS build) para pruebas del usuario.
+
+### T5 — APK generado (2026-10-12)
+- Build EAS `8760ddc0-eefb-4ab2-a563-6d64efe92e38` (perfil `preview`, commit
+  `e186e3a`): **FINISHED**. Descargado a
+  `C:\data\data\eco\apk\application-eco.apk` (74.86 MB).
+  Link directo: https://expo.dev/artifacts/eas/aV9wfCM1r0AFGCrpjQj1vH2reBjOzUjE3ki05NakqIM.apk
 
 ## Commits
-(pendiente)
+- e186e3a feat(mobile): add alternate-location search with autocomplete and optional time
 
 ## Verificación
 - `npm run typecheck --workspaces`: 0 errores.
