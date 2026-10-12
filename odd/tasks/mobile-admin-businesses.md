@@ -49,28 +49,37 @@ de negocio, producto principal, precio, teléfono, RUC, password, skill, etc.
       guarda `is_admin()`, mismas reglas de validación de password que
       `update_mobile_business`; `grant execute` a `authenticated` únicamente
       (no `anon`, para que solo una sesión autenticada pueda invocarla).
-- [ ] T2 — `lib/supabase.ts`: habilitar `autoRefreshToken`; nuevo
+- [x] T2 — `lib/supabase.ts`: habilitar `autoRefreshToken`; nuevo
       `services/adminAuth.ts` (signIn, signOut, `getAdminSession` que lee
       `app_metadata.role` del JWT de la sesión activa).
-- [ ] T3 — `AdminLoginScreen.tsx` (email/password) + enlace "Ver negocios
+- [x] T3 — `AdminLoginScreen.tsx` (email/password) + enlace "Ver negocios
       (admin)" en `SecondAccessScreen.tsx`, wireado en `App.tsx` (nueva fase
       `adminLogin`).
-- [ ] T4 — `BusinessListScreen.tsx` (listado + buscador) + fase `adminLista`
+- [x] T4 — `BusinessListScreen.tsx` (listado + buscador) + fase `adminLista`
       en `App.tsx`.
-- [ ] T5 — `BusinessAdminEditScreen.tsx` (edición completa: ubicación,
+- [x] T5 — `BusinessAdminEditScreen.tsx` (edición completa: ubicación,
       nombre, producto principal, precio, teléfono, RUC, password, skill) +
       fase `adminEditar` en `App.tsx`.
-- [ ] T6 — Encabezado compartido (`AppHeader`, de `mobile-shared-header`) en
+- [x] T6 — Encabezado compartido (`AppHeader`, de `mobile-shared-header`) en
       las 3 pantallas nuevas, con "Volver" hacia el listado/segundo según
       corresponda.
-- [ ] T7 — Verificación: `npm run typecheck --workspaces`,
-      `npx expo export --platform android`, y (si hay entorno) pruebas de la
-      RPC nueva vía pgTAP si el proyecto ya tiene arnés de pruebas para
-      0006/0005.
-- [ ] T8 — Generar APK (EAS build) para pruebas del usuario.
+- [x] T7 — Verificación: `npm run typecheck --workspaces`,
+      `npx expo export --platform android`.
+- [x] T8 — Generar APK (EAS build) para pruebas del usuario.
+
+### T7 — Verificación (2026-10-12)
+- `npm run typecheck --workspaces`: PASS (mobile, web, shared sin errores).
+- `npx expo export --platform android`: PASS (709 módulos, bundle 2.5 MB).
+
+### T8 — APK generado (2026-10-12)
+- Build EAS `1244f521-79bc-4354-8422-2c911c5dec76` (perfil `preview`, commit
+  `9483b22`): **FINISHED**. Descargado a
+  `C:\data\data\eco\apk\application-eco.apk` (78,504,416 bytes, ~74.9 MB).
+  Link directo: https://expo.dev/artifacts/eas/f9oyG7dgFQwyAiR6nIjf26rs6HfvlMSxTzZxBaTJD84.apk
 
 ## Commits
-(pendiente, se registran al cerrar la feature completa)
+- 54bec56 feat(supabase): add admin_set_business_password RPC for mobile admin edit
+- 9483b22 feat(mobile): add admin login and business list/edit screens
 
 ## Verificación
 - pgTAP (harness Docker local, migraciones 0001..0007): 119 ok, 0 not ok
