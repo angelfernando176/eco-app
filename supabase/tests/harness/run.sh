@@ -99,8 +99,8 @@ if [ "${PGTAP_AVAILABLE}" -ne 1 ]; then
   exit 1
 fi
 
-echo "--- applying migrations 0001..0006 ---"
-for f in 0001_init.sql 0002_auth.sql 0003_admin_business_limit.sql 0004_catalog_limits_storage.sql 0005_mobile.sql 0006_mobile_business.sql; do
+echo "--- applying migrations 0001..0007 ---"
+for f in 0001_init.sql 0002_auth.sql 0003_admin_business_limit.sql 0004_catalog_limits_storage.sql 0005_mobile.sql 0006_mobile_business.sql 0007_admin_mobile_password.sql; do
   echo "    -> ${f}"
   cat "${MIGRATIONS_DIR}/${f}" | psql_exec -t -A -f /dev/stdin
 done
