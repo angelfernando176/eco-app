@@ -11,6 +11,7 @@ export interface SecondAccessScreenProps {
   onContinuar: () => void
   onRegistrarTelefono: () => void
   onVerNegocio: () => void
+  onVerNegociosAdmin: () => void
 }
 
 export function SecondAccessScreen({
@@ -18,6 +19,7 @@ export function SecondAccessScreen({
   onContinuar,
   onRegistrarTelefono,
   onVerNegocio,
+  onVerNegociosAdmin,
 }: SecondAccessScreenProps) {
   const [sincronizando, setSincronizando] = useState(false)
   const [aviso, setAviso] = useState<string | null>(null)
@@ -83,6 +85,8 @@ export function SecondAccessScreen({
           />
         </View>
       ) : null}
+
+      <Button title="Ver negocios (admin)" variant="ghost" onPress={onVerNegociosAdmin} style={styles.adminLink} />
     </View>
   )
 }
@@ -115,5 +119,8 @@ const styles = StyleSheet.create({
   },
   rowButton: {
     flex: 1,
+  },
+  adminLink: {
+    marginTop: spacing[4],
   },
 })

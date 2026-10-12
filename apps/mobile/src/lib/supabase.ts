@@ -7,12 +7,13 @@ import { isSupabaseConfigured, supabaseAnonKey, supabaseUrl } from '../config'
  *
  * The mobile user has no Auth account (operates as `anon`); writes go
  * through SECURITY DEFINER RPCs in the `eco` schema (register_mobile_user,
- * submit_rating). See supabase/migrations/0005_mobile.sql.
+ * submit_rating). See supabase/migrations/0005_mobile.sql. The one
+ * exception is the admin flow, which signs in with Supabase Auth.
  */
 export const supabase =
   isSupabaseConfigured && supabaseUrl && supabaseAnonKey
     ? createClient(supabaseUrl, supabaseAnonKey, {
         db: { schema: 'eco' },
-        auth: { persistSession: false, autoRefreshToken: false },
+        auth: { persistSession: false, autoRefreshToken: true },
       })
     : null

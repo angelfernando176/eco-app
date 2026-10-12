@@ -5,8 +5,11 @@ import { guardarIngreso, obtenerIngreso, type Ingreso } from './src/db/ingreso'
 import { initLocalDatabase } from './src/db/database'
 import { obtenerNegocioLocal, prepararBajaPendiente, type Negocio } from './src/db/negocio'
 import { AppHeader } from './src/components/AppHeader'
+import { AdminLoginScreen } from './src/screens/AdminLoginScreen'
+import { BusinessAdminEditScreen } from './src/screens/BusinessAdminEditScreen'
 import { BusinessDetailScreen } from './src/screens/BusinessDetailScreen'
 import { BusinessFormScreen } from './src/screens/BusinessFormScreen'
+import { BusinessListScreen } from './src/screens/BusinessListScreen'
 import { BusinessManageScreen } from './src/screens/BusinessManageScreen'
 import { DeactivationSurveyScreen } from './src/screens/DeactivationSurveyScreen'
 import { FirstAccessScreen } from './src/screens/FirstAccessScreen'
@@ -14,6 +17,8 @@ import { MobileContentScreen } from './src/screens/MobileContentScreen'
 import { RegisterMapScreen } from './src/screens/RegisterMapScreen'
 import { SecondAccessScreen } from './src/screens/SecondAccessScreen'
 import { SearchScreen } from './src/screens/SearchScreen'
+import { signOutAdmin } from './src/services/adminAuth'
+import type { AdminBusinessSummary } from './src/services/adminBusinessApi'
 import type { GeoPoint } from './src/services/geo'
 import type { DeactivationReason } from './src/services/mobileBusinessLogic'
 import type { BusinessResult } from './src/services/businessSearchLogic'
@@ -30,6 +35,9 @@ type Fase =
   | 'verNegocio'
   | 'darDeBaja'
   | 'gestionarContenido'
+  | 'adminLogin'
+  | 'adminLista'
+  | 'adminEditar'
 
 export default function App() {
   const [fase, setFase] = useState<Fase>('cargando')
@@ -38,6 +46,7 @@ export default function App() {
   const [negocioExistente, setNegocioExistente] = useState(false)
   const [coordsRegistro, setCoordsRegistro] = useState<GeoPoint | null>(null)
   const [negocio, setNegocio] = useState<Negocio | null>(null)
+  const [adminBusinessSeleccionado, setAdminBusinessSeleccionado] = useState<AdminBusinessSummary | null>(null)
 
   useEffect(() => {
     initLocalDatabase()
@@ -134,7 +143,50 @@ export default function App() {
           onContinuar={handleContinuar}
           onRegistrarTelefono={handleRegistrarTelefono}
           onVerNegocio={handleVerNegocio}
+          onVerNegociosAdmin={() => setFase('adminLogin')}
         />
+        <StatusBar style="auto" />
+      </>
+    )
+  }
+
+  if (fase === 'adminLogin') {
+    return (
+      <>
+        <AppHeader mode="back" onAction={() => setFase('segundo')} />
+        <AdminLoginScreen onSuccess={() => setFase('adminLista')} onCancel={() => setFase('segundo')} />
+        <StatusBar style="auto" />
+      </>
+    )
+  }
+
+  if (fase === 'adminLista') {
+    return (
+      <>
+        <AppHeader
+          mode="back"
+          onAction={() => {
+            // persistSession:false keeps the admin session in memory only; end it explicitly on leaving the admin area.
+            void signOutAdmin()
+            setFase('segundo')
+          }}
+        />
+        <BusinessListScreen
+          onSelect={(b) => {
+            setAdminBusinessSeleccionado(b)
+            setFase('adminEditar')
+          }}
+        />
+        <StatusBar style="auto" />
+      </>
+    )
+  }
+
+  if (fase === 'adminEditar' && adminBusinessSeleccionado) {
+    return (
+      <>
+        <AppHeader mode="back" onAction={() => setFase('adminLista')} />
+        <BusinessAdminEditScreen businessId={adminBusinessSeleccionado.id} onSaved={() => setFase('adminLista')} />
         <StatusBar style="auto" />
       </>
     )
