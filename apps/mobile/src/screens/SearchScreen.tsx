@@ -1,19 +1,34 @@
 import { Picker } from '@react-native-picker/picker'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FlatList, Platform, Pressable, StyleSheet, Text, View } from 'react-native'
 import MapView, { Circle, Marker, PROVIDER_GOOGLE } from 'react-native-maps'
 import { Banner } from '../components/Banner'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
+import { HelpTooltip } from '../components/HelpTooltip'
 import { RadarLoading } from '../components/RadarLoading'
 import { TextField } from '../components/TextField'
 import { googleMapsApiKey } from '../config'
 import { guardarBusqueda } from '../db/busquedas'
+import { searchPlaces, type PlaceSuggestion } from '../services/geocoding'
 import { searchBusinesses } from '../services/businessSearch'
 import type { BusinessResult } from '../services/businessSearchLogic'
 import { formatDistance, RADIUS_OPTIONS_KM, regionForRadius, type GeoPoint, type RadiusKm } from '../services/geo'
 import { getCurrentPosition } from '../services/location'
 import { colors, radius, spacing, typography } from '../theme'
+
+const HORA_PATTERN = /^([01]?\d|2[0-3]):[0-5]\d$/
+
+function esHoraValida(hora: string): boolean {
+  if (!HORA_PATTERN.test(hora)) {
+    return false
+  }
+  const [h, m] = hora.split(':').map(Number)
+  const now = new Date()
+  const minutosIngresados = h * 60 + m
+  const minutosActuales = now.getHours() * 60 + now.getMinutes()
+  return minutosIngresados > minutosActuales
+}
 
 export interface SearchScreenProps {
   nombre: string
@@ -32,31 +47,76 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
   const [results, setResults] = useState<BusinessResult[]>([])
   const [center, setCenter] = useState<GeoPoint | null>(null)
 
+  const [otroLugarAbierto, setOtroLugarAbierto] = useState(false)
+  const [lugarTexto, setLugarTexto] = useState('')
+  const [lugarSeleccionado, setLugarSeleccionado] = useState<PlaceSuggestion | null>(null)
+  const [sugerencias, setSugerencias] = useState<PlaceSuggestion[]>([])
+  const [horaTexto, setHoraTexto] = useState('')
+  const [horaError, setHoraError] = useState<string | undefined>(undefined)
+
+  useEffect(() => {
+    if (!lugarTexto || lugarSeleccionado) {
+      setSugerencias([])
+      return
+    }
+    const timeoutId = setTimeout(() => {
+      searchPlaces(lugarTexto).then(setSugerencias)
+    }, 300)
+    return () => clearTimeout(timeoutId)
+  }, [lugarTexto, lugarSeleccionado])
+
+  function handleLugarTextoChange(value: string) {
+    setLugarTexto(value)
+    setLugarSeleccionado(null)
+  }
+
+  function handleSeleccionarSugerencia(suggestion: PlaceSuggestion) {
+    setLugarSeleccionado(suggestion)
+    setLugarTexto(suggestion.label)
+    setSugerencias([])
+  }
+
+  function handleHoraTextoChange(value: string) {
+    setHoraTexto(value)
+    if (!value) {
+      setHoraError(undefined)
+      return
+    }
+    setHoraError(esHoraValida(value) ? undefined : 'Ingresá una hora válida, posterior a la actual (HH:MM).')
+  }
+
   async function handleBuscar() {
     setStatus('loading')
     setErrorMessage(null)
 
-    const location = await getCurrentPosition()
-    if (!location.ok) {
-      setStatus('error')
-      setErrorMessage(location.message)
-      return
+    let coords: GeoPoint
+    if (lugarSeleccionado) {
+      coords = { latitude: lugarSeleccionado.latitude, longitude: lugarSeleccionado.longitude }
+    } else {
+      const location = await getCurrentPosition()
+      if (!location.ok) {
+        setStatus('error')
+        setErrorMessage(location.message)
+        return
+      }
+      coords = location.coords
     }
 
     try {
       const found = await searchBusinesses({
-        center: location.coords,
+        center: coords,
         radiusKm,
         term: term.trim() || undefined,
       })
       guardarBusqueda({
         termino: term.trim() || null,
         radioKm: radiusKm,
-        latitud: location.coords.latitude,
-        longitud: location.coords.longitude,
+        latitud: coords.latitude,
+        longitud: coords.longitude,
         resultados: found.length,
+        horaBuscada: horaTexto && esHoraValida(horaTexto) ? horaTexto : null,
       })
-      setCenter(location.coords)
+      setCenter(coords)
       setResults(found)
       setStatus(found.length > 0 ? 'results' : 'empty')
     } catch (err) {
@@ -100,7 +160,57 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
               </View>
             </View>
 
-            <Button title="Buscar" onPress={handleBuscar} loading={status === 'loading'} style={styles.button} />
+            <View style={styles.buttonRow}>
+              <Button title="Buscar" onPress={handleBuscar} loading={status === 'loading'} style={styles.rowButton} />
+              <Button
+                title="Buscar en otro lugar"
+                variant="ghost"
+                onPress={() => setOtroLugarAbierto((open) => !open)}
+                style={styles.rowButton}
+              />
+            </View>
+
+            {otroLugarAbierto ? (
+              <View style={styles.otroLugarPanel}>
+                <View>
+                  <TextField
+                    label="Dónde deseas buscar (ciudad, calle principal, calle secundaria):"
+                    value={lugarTexto}
+                    onChangeText={handleLugarTextoChange}
+                    placeholder="Ej: Av. Amazonas, Quito"
+                  />
+                  {sugerencias.length > 0 && !lugarSeleccionado ? (
+                    <View style={styles.sugerenciasList}>
+                      {sugerencias.map((suggestion, index) => (
+                        <Pressable
+                          key={`${suggestion.latitude}-${suggestion.longitude}-${index}`}
+                          onPress={() => handleSeleccionarSugerencia(suggestion)}
+                          style={styles.sugerenciaRow}
+                        >
+                          <Text style={styles.sugerenciaText} numberOfLines={1} ellipsizeMode="tail">
+                            {suggestion.label}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  ) : null}
+                </View>
+
+                <View>
+                  <View style={styles.horaLabelRow}>
+                    <Text style={styles.label}>En qué momento deseas buscar (Ej: 7:30, 15:50):</Text>
+                    <HelpTooltip message="Busca la disponibilidad de un producto/servicio en una hora determinada" />
+                  </View>
+                  <TextField
+                    value={horaTexto}
+                    onChangeText={handleHoraTextoChange}
+                    placeholder="HH:MM"
+                    keyboardType="numeric"
+                    error={horaError}
+                  />
+                </View>
+              </View>
+            ) : null}
 
             {status === 'error' && errorMessage ? (
               <View style={styles.banner}>
@@ -208,6 +318,42 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: spacing[2],
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: spacing[3],
+    marginTop: spacing[2],
+  },
+  rowButton: {
+    flex: 1,
+  },
+  otroLugarPanel: {
+    gap: spacing[3],
+  },
+  sugerenciasList: {
+    borderWidth: 1,
+    borderColor: colors.gray[300],
+    borderRadius: radius.md,
+    marginTop: spacing[1],
+  },
+  sugerenciaRow: {
+    paddingHorizontal: spacing[3],
+    paddingVertical: spacing[2],
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[200],
+  },
+  sugerenciaText: {
+    fontSize: typography.size.sm,
+    color: colors.gray[700],
+  },
+  horaLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  label: {
+    fontSize: typography.size.sm,
+    color: colors.gray[700],
+    fontWeight: typography.weight.medium as '500',
   },
   banner: {
     gap: spacing[2],

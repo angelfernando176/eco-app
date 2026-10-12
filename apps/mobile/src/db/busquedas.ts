@@ -16,12 +16,13 @@ export interface NuevaBusqueda {
   latitud: number
   longitud: number
   resultados: number
+  horaBuscada?: string | null
 }
 
 export function guardarBusqueda(input: NuevaBusqueda): void {
   db.runSync(
-    'INSERT INTO busquedas (termino, radio_km, latitud, longitud, resultados) VALUES (?, ?, ?, ?, ?)',
-    [input.termino ?? null, input.radioKm, input.latitud, input.longitud, input.resultados]
+    'INSERT INTO busquedas (termino, radio_km, latitud, longitud, resultados, hora_buscada) VALUES (?, ?, ?, ?, ?, ?)',
+    [input.termino ?? null, input.radioKm, input.latitud, input.longitud, input.resultados, input.horaBuscada ?? null]
   )
 }
 

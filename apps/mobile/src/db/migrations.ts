@@ -74,6 +74,10 @@ export const MIGRATIONS: Migration[] = [
     version: 4,
     statements: [`ALTER TABLE negocio ADD COLUMN pending_skill_name TEXT;`],
   },
+  {
+    version: 5,
+    statements: [`ALTER TABLE busquedas ADD COLUMN hora_buscada TEXT;`],
+  },
 ]
 
 export function pendingMigrations(currentVersion: number): Migration[] {
