@@ -74,12 +74,9 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
           <View style={styles.header}>
-            <View style={styles.headerRow}>
-              <Text style={styles.title}>ECO</Text>
-              <Text style={styles.greeting} numberOfLines={1} ellipsizeMode="tail">
-                Hola{nombre ? `, ${nombre}` : ''}. ¿Qué negocio buscas?
-              </Text>
-            </View>
+            <Text style={styles.greeting}>
+              Hola{nombre ? `, ${nombre}` : ''}. ¿Qué negocio buscas?
+            </Text>
 
             <View style={styles.searchRow}>
               <View style={styles.searchField}>
@@ -191,18 +188,7 @@ const styles = StyleSheet.create({
   header: {
     gap: spacing[3],
   },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: spacing[2],
-  },
-  title: {
-    fontSize: typography.size['3xl'],
-    fontWeight: typography.weight.bold as '700',
-    color: colors.brand[700],
-  },
   greeting: {
-    flex: 1,
     fontSize: typography.size.sm,
     color: colors.gray[600],
   },

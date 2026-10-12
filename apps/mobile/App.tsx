@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar'
 import { guardarIngreso, obtenerIngreso, type Ingreso } from './src/db/ingreso'
 import { initLocalDatabase } from './src/db/database'
 import { obtenerNegocioLocal, prepararBajaPendiente, type Negocio } from './src/db/negocio'
+import { AppHeader } from './src/components/AppHeader'
 import { BusinessDetailScreen } from './src/screens/BusinessDetailScreen'
 import { BusinessFormScreen } from './src/screens/BusinessFormScreen'
 import { BusinessManageScreen } from './src/screens/BusinessManageScreen'
@@ -127,6 +128,7 @@ export default function App() {
   if (fase === 'segundo') {
     return (
       <>
+        <AppHeader mode="home" onAction={() => {}} />
         <SecondAccessScreen
           negocioExistente={negocioExistente}
           onContinuar={handleContinuar}
@@ -141,6 +143,7 @@ export default function App() {
   if (fase === 'registrarMapa') {
     return (
       <>
+        <AppHeader mode="back" onAction={handleCancelarRegistro} />
         <RegisterMapScreen onIniciarRegistro={handleIniciarRegistro} onCancel={handleCancelarRegistro} />
         <StatusBar style="auto" />
       </>
@@ -150,6 +153,7 @@ export default function App() {
   if (fase === 'registrarFormulario' && coordsRegistro) {
     return (
       <>
+        <AppHeader mode="back" onAction={handleCancelarRegistro} />
         <BusinessFormScreen
           nombreUsuario={ingreso?.nombre ?? ''}
           coords={coordsRegistro}
@@ -165,6 +169,7 @@ export default function App() {
   if (fase === 'verNegocio' && negocio) {
     return (
       <>
+        <AppHeader mode="back" onAction={() => setFase('segundo')} />
         <BusinessManageScreen
           negocio={negocio}
           onVolver={() => setFase('segundo')}
@@ -180,6 +185,7 @@ export default function App() {
   if (fase === 'gestionarContenido' && negocio) {
     return (
       <>
+        <AppHeader mode="back" onAction={() => setFase('verNegocio')} />
         <MobileContentScreen negocio={negocio} onVolver={() => setFase('verNegocio')} />
         <StatusBar style="auto" />
       </>
@@ -189,6 +195,7 @@ export default function App() {
   if (fase === 'darDeBaja') {
     return (
       <>
+        <AppHeader mode="back" onAction={() => setFase('verNegocio')} />
         <DeactivationSurveyScreen onEnviado={handleBajaEnviada} onCancel={() => setFase('verNegocio')} />
         <StatusBar style="auto" />
       </>
@@ -198,6 +205,7 @@ export default function App() {
   if (selectedBusiness) {
     return (
       <>
+        <AppHeader mode="back" onAction={() => setSelectedBusiness(null)} />
         <BusinessDetailScreen business={selectedBusiness} onBack={() => setSelectedBusiness(null)} />
         <StatusBar style="auto" />
       </>
@@ -206,6 +214,7 @@ export default function App() {
 
   return (
     <>
+      <AppHeader mode="back" onAction={() => setFase('segundo')} />
       <SearchScreen nombre={ingreso?.nombre ?? ''} onSelectBusiness={setSelectedBusiness} />
       <StatusBar style="auto" />
     </>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { TabBar } from '../components/TabBar'
 import { ContactTab } from './business/ContactTab'
 import { MapTab } from './business/MapTab'
@@ -44,15 +44,9 @@ export function BusinessDetailScreen({ business, onBack }: BusinessDetailScreenP
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.appName} numberOfLines={1}>ECO</Text>
-        <Text style={styles.businessName} numberOfLines={1}>
-          {business.tradeName}
-        </Text>
-        <Pressable onPress={onBack} style={styles.backButton} accessibilityRole="button">
-          <Text style={styles.backButtonText}>→</Text>
-        </Pressable>
-      </View>
+      <Text style={styles.businessName} numberOfLines={1}>
+        {business.tradeName}
+      </Text>
 
       <TabBar tabs={TABS} activeTab={activeTab} onSelect={handleSelectTab} />
 
@@ -106,37 +100,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[3],
-    paddingHorizontal: spacing[4],
-    paddingTop: spacing[10],
-    paddingBottom: spacing[3],
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray[200],
-  },
-  appName: {
-    fontSize: typography.size['3xl'],
-    fontWeight: typography.weight.bold as '700',
-    color: colors.brand[700],
-  },
   businessName: {
-    flex: 1,
     textAlign: 'center',
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold as '600',
     color: colors.gray[900],
-  },
-  backButton: {
-    width: 32,
-    alignItems: 'flex-end',
-    paddingVertical: spacing[1],
-  },
-  backButtonText: {
-    fontSize: typography.size.lg,
-    color: colors.brand[600],
-    fontWeight: typography.weight.semibold as '600',
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[3],
   },
   content: {
     flex: 1,
