@@ -5,32 +5,31 @@ import {
   actualizarRol,
   guardarCredenciales,
   guardarIngreso,
+  limpiarPassword,
   marcarIngresoSincronizado,
   obtenerIngreso,
   type Ingreso,
 } from './src/db/ingreso'
 import { initLocalDatabase } from './src/db/database'
-import { obtenerNegocioLocal, prepararBajaPendiente, type Negocio } from './src/db/negocio'
+import { obtenerNegocioLocal } from './src/db/negocio'
 import { AppHeader } from './src/components/AppHeader'
-import { AdminLoginScreen } from './src/screens/AdminLoginScreen'
-import { BusinessAdminEditScreen } from './src/screens/BusinessAdminEditScreen'
+import { BusinessAccessDetailScreen } from './src/screens/BusinessAccessDetailScreen'
+import { BusinessAccessListScreen } from './src/screens/BusinessAccessListScreen'
 import { BusinessDetailScreen } from './src/screens/BusinessDetailScreen'
 import { BusinessFormScreen } from './src/screens/BusinessFormScreen'
-import { BusinessListScreen } from './src/screens/BusinessListScreen'
-import { BusinessManageScreen } from './src/screens/BusinessManageScreen'
-import { DeactivationSurveyScreen } from './src/screens/DeactivationSurveyScreen'
 import { FirstAccessScreen } from './src/screens/FirstAccessScreen'
-import { MobileContentScreen } from './src/screens/MobileContentScreen'
 import { RegisterMapScreen } from './src/screens/RegisterMapScreen'
 import { SecondAccessScreen } from './src/screens/SecondAccessScreen'
 import { SearchScreen } from './src/screens/SearchScreen'
-import { signOutAdmin } from './src/services/adminAuth'
-import type { AdminBusinessSummary } from './src/services/adminBusinessApi'
+import { VerifyPasswordScreen } from './src/screens/VerifyPasswordScreen'
+import { signInAsAdmin, signOutAdmin } from './src/services/adminAuth'
+import { verifyAccount } from './src/services/accountAuth'
 import type { GeoPoint } from './src/services/geo'
-import type { DeactivationReason } from './src/services/mobileBusinessLogic'
 import type { BusinessResult } from './src/services/businessSearchLogic'
 import { syncPending } from './src/services/sync'
 import { colors } from './src/theme'
+
+type Rol = 'none' | 'subscribed' | 'admin'
 
 type Fase =
   | 'cargando'
@@ -39,12 +38,10 @@ type Fase =
   | 'principal'
   | 'registrarMapa'
   | 'registrarFormulario'
-  | 'verNegocio'
-  | 'darDeBaja'
-  | 'gestionarContenido'
-  | 'adminLogin'
-  | 'adminLista'
-  | 'adminEditar'
+  | 'verificandoAcceso'
+  | 'verificarClave'
+  | 'listaNegocios'
+  | 'detalleNegocio'
 
 export default function App() {
   const [fase, setFase] = useState<Fase>('cargando')
@@ -52,8 +49,8 @@ export default function App() {
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessResult | null>(null)
   const [negocioExistente, setNegocioExistente] = useState(false)
   const [coordsRegistro, setCoordsRegistro] = useState<GeoPoint | null>(null)
-  const [negocio, setNegocio] = useState<Negocio | null>(null)
-  const [adminBusinessSeleccionado, setAdminBusinessSeleccionado] = useState<AdminBusinessSummary | null>(null)
+  const [accesoNegocios, setAccesoNegocios] = useState<{ ownerId: string; role: Rol } | null>(null)
+  const [negocioAccesoId, setNegocioAccesoId] = useState<string | null>(null)
 
   useEffect(() => {
     initLocalDatabase()
@@ -72,7 +69,7 @@ export default function App() {
     email: string,
     password: string,
     remoteUserId: string,
-    role: 'none' | 'subscribed' | 'admin'
+    role: Rol
   ) {
     guardarIngreso(nombre, rangoEdad)
     const nuevoIngreso = obtenerIngreso()
@@ -93,32 +90,57 @@ export default function App() {
     setFase('registrarMapa')
   }
 
-  function handleVerNegocio() {
-    setNegocio(obtenerNegocioLocal())
-    setFase('verNegocio')
+  /** Resuelve el rol real (admin exige además una sesión de Auth real para las políticas RLS). */
+  async function completarAccesoNegocios(userId: string, role: Rol, email: string, password: string) {
+    if (ingreso) {
+      guardarCredenciales(ingreso.id, email, password)
+      actualizarRol(ingreso.id, role)
+      setIngreso(obtenerIngreso())
+    }
+
+    let rolFinal = role
+    if (rolFinal === 'admin') {
+      const adminResult = await signInAsAdmin(email, password)
+      if (!adminResult.ok) rolFinal = 'subscribed'
+    }
+
+    setAccesoNegocios({ ownerId: userId, role: rolFinal })
+    setFase('listaNegocios')
   }
 
-  function handleNegocioActualizado() {
-    setNegocio(obtenerNegocioLocal())
-    setNegocioExistente(obtenerNegocioLocal() !== null)
+  async function handleVerNegocio() {
+    if (ingreso?.email && ingreso.password) {
+      setFase('verificandoAcceso')
+      const result = await verifyAccount(ingreso.email, ingreso.password)
+      if (result.ok) {
+        await completarAccesoNegocios(result.userId, result.role, ingreso.email, ingreso.password)
+      } else {
+        limpiarPassword(ingreso.id)
+        setIngreso(obtenerIngreso())
+        setFase('verificarClave')
+      }
+      return
+    }
+    setFase('verificarClave')
+  }
+
+  function handleClaveVerificada(userId: string, _firstName: string, role: Rol, password: string) {
+    void completarAccesoNegocios(userId, role, ingreso?.email ?? '', password)
+  }
+
+  async function handleSalirDeNegocios() {
+    if (accesoNegocios?.role === 'admin') {
+      await signOutAdmin()
+    }
+    setAccesoNegocios(null)
+    setNegocioAccesoId(null)
     setFase('segundo')
   }
 
-  function handleDarDeBaja() {
-    setFase('darDeBaja')
-  }
-
-  async function handleBajaEnviada(reason: DeactivationReason, comment: string) {
-    if (!negocio) return
-    prepararBajaPendiente(negocio.id, reason, comment)
-    await syncPending()
-    setNegocio(obtenerNegocioLocal())
-    setNegocioExistente(obtenerNegocioLocal() !== null)
-    setFase('segundo')
-  }
-
-  function handleGestionarContenido() {
-    setFase('gestionarContenido')
+  function handleCerrarSesion() {
+    if (!ingreso) return
+    limpiarPassword(ingreso.id)
+    setIngreso(obtenerIngreso())
   }
 
   function handleIniciarRegistro(coords: GeoPoint) {
@@ -137,7 +159,7 @@ export default function App() {
     setFase('segundo')
   }
 
-  if (fase === 'cargando') {
+  if (fase === 'cargando' || fase === 'verificandoAcceso') {
     return (
       <View style={styles.container}>
         <Text>Cargando…</Text>
@@ -157,7 +179,7 @@ export default function App() {
   if (fase === 'segundo') {
     return (
       <>
-        <AppHeader mode="home" onAction={() => {}} />
+        <AppHeader mode="home" onAction={() => {}} onLogout={handleCerrarSesion} />
         <SecondAccessScreen
           nombre={ingreso?.nombre ?? ''}
           negocioExistente={negocioExistente}
@@ -170,43 +192,42 @@ export default function App() {
     )
   }
 
-  if (fase === 'adminLogin') {
+  if (fase === 'verificarClave') {
     return (
       <>
         <AppHeader mode="back" onAction={() => setFase('segundo')} />
-        <AdminLoginScreen onSuccess={() => setFase('adminLista')} onCancel={() => setFase('segundo')} />
-        <StatusBar style="auto" />
-      </>
-    )
-  }
-
-  if (fase === 'adminLista') {
-    return (
-      <>
-        <AppHeader
-          mode="back"
-          onAction={() => {
-            // persistSession:false keeps the admin session in memory only; end it explicitly on leaving the admin area.
-            void signOutAdmin()
-            setFase('segundo')
-          }}
-        />
-        <BusinessListScreen
-          onSelect={(b) => {
-            setAdminBusinessSeleccionado(b)
-            setFase('adminEditar')
-          }}
+        <VerifyPasswordScreen
+          email={ingreso?.email ?? ''}
+          onVerified={handleClaveVerificada}
+          onCancel={() => setFase('segundo')}
         />
         <StatusBar style="auto" />
       </>
     )
   }
 
-  if (fase === 'adminEditar' && adminBusinessSeleccionado) {
+  if (fase === 'listaNegocios' && accesoNegocios) {
     return (
       <>
-        <AppHeader mode="back" onAction={() => setFase('adminLista')} />
-        <BusinessAdminEditScreen businessId={adminBusinessSeleccionado.id} onSaved={() => setFase('adminLista')} />
+        <AppHeader mode="back" onAction={() => void handleSalirDeNegocios()} />
+        <BusinessAccessListScreen
+          role={accesoNegocios.role}
+          ownerId={accesoNegocios.ownerId}
+          onSelect={(id) => {
+            setNegocioAccesoId(id)
+            setFase('detalleNegocio')
+          }}
+        />
+        <StatusBar style="auto" />
+      </>
+    )
+  }
+
+  if (fase === 'detalleNegocio' && accesoNegocios && negocioAccesoId) {
+    return (
+      <>
+        <AppHeader mode="back" onAction={() => setFase('listaNegocios')} />
+        <BusinessAccessDetailScreen businessId={negocioAccesoId} role={accesoNegocios.role} />
         <StatusBar style="auto" />
       </>
     )
@@ -233,42 +254,6 @@ export default function App() {
           onSaved={handleNegocioGuardado}
           onCancel={handleCancelarRegistro}
         />
-        <StatusBar style="auto" />
-      </>
-    )
-  }
-
-  if (fase === 'verNegocio' && negocio) {
-    return (
-      <>
-        <AppHeader mode="back" onAction={() => setFase('segundo')} />
-        <BusinessManageScreen
-          negocio={negocio}
-          onVolver={() => setFase('segundo')}
-          onActualizado={handleNegocioActualizado}
-          onDarDeBaja={handleDarDeBaja}
-          onGestionarContenido={handleGestionarContenido}
-        />
-        <StatusBar style="auto" />
-      </>
-    )
-  }
-
-  if (fase === 'gestionarContenido' && negocio) {
-    return (
-      <>
-        <AppHeader mode="back" onAction={() => setFase('verNegocio')} />
-        <MobileContentScreen negocio={negocio} onVolver={() => setFase('verNegocio')} />
-        <StatusBar style="auto" />
-      </>
-    )
-  }
-
-  if (fase === 'darDeBaja') {
-    return (
-      <>
-        <AppHeader mode="back" onAction={() => setFase('verNegocio')} />
-        <DeactivationSurveyScreen onEnviado={handleBajaEnviada} onCancel={() => setFase('verNegocio')} />
         <StatusBar style="auto" />
       </>
     )

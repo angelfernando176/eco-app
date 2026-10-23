@@ -4,7 +4,7 @@ import { Button } from '../components/Button'
 import { Chip } from '../components/Chip'
 import { TextField } from '../components/TextField'
 import { AGE_RANGES } from '../constants'
-import { registerAccount } from '../services/accountAuth'
+import { registerOrLogin } from '../services/accountAuth'
 import { colors, spacing, typography } from '../theme'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -51,13 +51,13 @@ export function FirstAccessScreen({ onSubmit }: FirstAccessScreenProps) {
     }
     setError(null)
     setLoading(true)
-    const result = await registerAccount(nombreLimpio, rangoEdad, emailLimpio, password)
+    const result = await registerOrLogin(nombreLimpio, rangoEdad, emailLimpio, password)
     setLoading(false)
     if (!result.ok) {
       setError(result.message)
       return
     }
-    onSubmit(nombreLimpio, rangoEdad, emailLimpio, password, result.remoteUserId, 'none')
+    onSubmit(nombreLimpio, rangoEdad, emailLimpio, password, result.remoteUserId, result.role)
   }
 
   return (

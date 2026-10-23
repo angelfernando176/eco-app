@@ -4,10 +4,12 @@ export type AccountVerifyResult =
   | { ok: true; userId: string; firstName: string; role: 'none' | 'subscribed' | 'admin' }
   | { ok: false }
 
+const DUPLICATE_EMAIL_MESSAGE = 'Ese correo ya tiene una cuenta registrada.'
+
 function mapRegisterErrorToSpanish(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error)
   if (/already exists/i.test(message)) {
-    return 'Ese correo ya tiene una cuenta registrada.'
+    return DUPLICATE_EMAIL_MESSAGE
   }
   if (/invalid email/i.test(message)) {
     return 'El correo ingresado no es válido.'
@@ -56,4 +58,30 @@ export async function verifyAccount(email: string, password: string): Promise<Ac
   }
 
   return { ok: true, userId: data.userId, firstName: data.firstName, role: data.role }
+}
+
+export async function registerOrLogin(
+  firstName: string,
+  ageRange: string,
+  email: string,
+  password: string
+): Promise<{ ok: true; remoteUserId: string; role: 'none' | 'subscribed' | 'admin' } | { ok: false; message: string }> {
+  const result = await registerAccount(firstName, ageRange, email, password)
+  if (result.ok) {
+    return { ok: true, remoteUserId: result.remoteUserId, role: 'none' }
+  }
+
+  if (result.message !== DUPLICATE_EMAIL_MESSAGE) {
+    return result
+  }
+
+  const verifyResult = await verifyAccount(email, password)
+  if (!verifyResult.ok) {
+    return {
+      ok: false,
+      message: 'Ese correo ya tiene una cuenta y la clave no coincide. Si ya tenés cuenta en la web, usá la misma clave.',
+    }
+  }
+
+  return { ok: true, remoteUserId: verifyResult.userId, role: verifyResult.role }
 }

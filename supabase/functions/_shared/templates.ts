@@ -81,3 +81,24 @@ export function subscriptionActivatedTemplate(params: { firstName: string; activ
   const text = `Hola ${firstName},\n\nTu suscripción en ECO fue activada el ${formattedDate}. Ya podés disfrutar de los beneficios de tu plan.\n\n${siteUrl}`
   return { subject, html, text }
 }
+
+export function subscriptionActivationRequestTemplate(params: { ownerFirstName: string; ownerEmail: string; businessTradeName: string }): EmailContent {
+  const { ownerFirstName, ownerEmail, businessTradeName } = params
+  const name = escapeHtml(ownerFirstName)
+  const email = escapeHtml(ownerEmail)
+  const businessName = escapeHtml(businessTradeName)
+  const subject = 'Solicitud de activación de suscripción — ECO'
+  const html = layout(
+    subject,
+    `
+      <p style="font-size:16px; margin:0 0 12px;">Hola,</p>
+      <p style="font-size:14px; line-height:1.5; margin:0 0 12px;">
+        <strong>${name}</strong> (correo: <strong>${email}</strong>) solicitó activar la suscripción
+        del negocio <strong>${businessName}</strong>. El equipo de administración puede dar
+        seguimiento a esta solicitud.
+      </p>
+    `,
+  )
+  const text = `Hola,\n\n${ownerFirstName} (correo: ${ownerEmail}) solicitó activar la suscripción del negocio ${businessTradeName}. El equipo de administración puede dar seguimiento a esta solicitud.`
+  return { subject, html, text }
+}

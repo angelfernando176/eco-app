@@ -4,13 +4,15 @@ import { colors, spacing, typography } from '../theme'
 export interface AppHeaderProps {
   mode: 'home' | 'back'
   onAction: () => void
+  onLogout?: () => void
 }
 
-export function AppHeader({ mode, onAction }: AppHeaderProps) {
+export function AppHeader({ mode, onAction, onLogout }: AppHeaderProps) {
   function handlePress() {
     if (mode === 'home') {
-      Alert.alert('¿Seguro que deseas salir?', undefined, [
+      Alert.alert('¿Qué deseas hacer?', undefined, [
         { text: 'Cancelar', style: 'cancel' },
+        { text: 'Cerrar sesión', onPress: () => onLogout?.() },
         { text: 'Salir', style: 'destructive', onPress: handleExit },
       ])
       return
