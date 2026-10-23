@@ -8,6 +8,7 @@ import { Card } from '../components/Card'
 import { HelpTooltip } from '../components/HelpTooltip'
 import { RadarLoading } from '../components/RadarLoading'
 import { TextField } from '../components/TextField'
+import { TimeStepperField } from '../components/TimeStepperField'
 import { googleMapsApiKey } from '../config'
 import { guardarBusqueda } from '../db/busquedas'
 import { searchPlaces, type PlaceSuggestion } from '../services/geocoding'
@@ -17,17 +18,26 @@ import { formatDistance, RADIUS_OPTIONS_KM, regionForRadius, type GeoPoint, type
 import { getCurrentPosition } from '../services/location'
 import { colors, radius, spacing, typography } from '../theme'
 
-const HORA_PATTERN = /^([01]?\d|2[0-3]):[0-5]\d$/
+function formatHora(hour: number, minute: number): string {
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
+}
 
-function esHoraValida(hora: string): boolean {
-  if (!HORA_PATTERN.test(hora)) {
-    return false
-  }
-  const [h, m] = hora.split(':').map(Number)
+function esHoraValida(hour: number, minute: number): boolean {
   const now = new Date()
-  const minutosIngresados = h * 60 + m
+  const minutosIngresados = hour * 60 + minute
   const minutosActuales = now.getHours() * 60 + now.getMinutes()
   return minutosIngresados > minutosActuales
+}
+
+function horaInicial(): { hour: number; minute: number } {
+  const now = new Date()
+  let hour = now.getHours()
+  let minute = now.getMinutes() + 1
+  if (minute >= 60) {
+    minute = 0
+    hour = (hour + 1) % 24
+  }
+  return { hour, minute }
 }
 
 export interface SearchScreenProps {
@@ -51,8 +61,13 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
   const [lugarTexto, setLugarTexto] = useState('')
   const [lugarSeleccionado, setLugarSeleccionado] = useState<PlaceSuggestion | null>(null)
   const [sugerencias, setSugerencias] = useState<PlaceSuggestion[]>([])
-  const [horaTexto, setHoraTexto] = useState('')
-  const [horaError, setHoraError] = useState<string | undefined>(undefined)
+  const [horaHabilitada, setHoraHabilitada] = useState(false)
+  const [horaHour, setHoraHour] = useState(0)
+  const [horaMinute, setHoraMinute] = useState(0)
+  const horaError =
+    horaHabilitada && !esHoraValida(horaHour, horaMinute)
+      ? 'Ingresá una hora posterior a la actual.'
+      : undefined
 
   useEffect(() => {
     if (!lugarTexto || lugarSeleccionado) {
@@ -76,13 +91,15 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
     setSugerencias([])
   }
 
-  function handleHoraTextoChange(value: string) {
-    setHoraTexto(value)
-    if (!value) {
-      setHoraError(undefined)
+  function handleToggleHora() {
+    if (horaHabilitada) {
+      setHoraHabilitada(false)
       return
     }
-    setHoraError(esHoraValida(value) ? undefined : 'Ingresá una hora válida, posterior a la actual (HH:MM).')
+    const inicial = horaInicial()
+    setHoraHour(inicial.hour)
+    setHoraMinute(inicial.minute)
+    setHoraHabilitada(true)
   }
 
   async function handleBuscar() {
@@ -114,7 +131,7 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
         latitud: coords.latitude,
         longitud: coords.longitude,
         resultados: found.length,
-        horaBuscada: horaTexto && esHoraValida(horaTexto) ? horaTexto : null,
+        horaBuscada: horaHabilitada && esHoraValida(horaHour, horaMinute) ? formatHora(horaHour, horaMinute) : null,
       })
       setCenter(coords)
       setResults(found)
@@ -198,16 +215,28 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
 
                 <View>
                   <View style={styles.horaLabelRow}>
-                    <Text style={styles.label}>En qué momento deseas buscar (Ej: 7:30, 15:50):</Text>
+                    <Text style={styles.label}>En qué momento deseas buscar:</Text>
                     <HelpTooltip message="Busca la disponibilidad de un producto/servicio en una hora determinada" />
                   </View>
-                  <TextField
-                    value={horaTexto}
-                    onChangeText={handleHoraTextoChange}
-                    placeholder="HH:MM"
-                    keyboardType="numeric"
-                    error={horaError}
-                  />
+                  {horaHabilitada ? (
+                    <>
+                      <TimeStepperField
+                        hour={horaHour}
+                        minute={horaMinute}
+                        onChangeHour={setHoraHour}
+                        onChangeMinute={setHoraMinute}
+                        error={horaError}
+                      />
+                      <Button
+                        title="Quitar hora"
+                        variant="ghost"
+                        onPress={handleToggleHora}
+                        style={styles.quitarHoraButton}
+                      />
+                    </>
+                  ) : (
+                    <Button title="Agregar hora" variant="ghost" onPress={handleToggleHora} style={styles.quitarHoraButton} />
+                  )}
                 </View>
               </View>
             ) : null}
@@ -349,6 +378,10 @@ const styles = StyleSheet.create({
   horaLabelRow: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  quitarHoraButton: {
+    alignSelf: 'flex-start',
+    marginTop: spacing[2],
   },
   label: {
     fontSize: typography.size.sm,
