@@ -138,6 +138,14 @@ ciudad, calle principal y calle secundaria completas.
 - [x] Verificación: `npm run typecheck --workspaces` (0 errores),
       `npx expo export --platform android` (710 módulos, éxito).
 
+### T12 — APK generado (2026-10-23)
+- Build EAS `1f58c494-11bb-4944-9fc7-7dcc9e85ea0c` (perfil `preview`, commit
+  `5e88978`): **FINISHED**. Incluye T9 (User-Agent Nominatim), T10 (campos
+  ciudad/calle principal/secundaria), T11 (Buscar/Buscar aquí) y T12
+  (Buscar deshabilitado). Descargado a
+  `C:\data\data\eco\apk\application-eco.apk` (74.86 MB).
+  Link directo: https://expo.dev/artifacts/eas/v80laKsFDoU2XEfjANRYh3vdTFzX2h9UIWsyixgmHEY.apk
+
 ## Commits
 - e186e3a feat(mobile): add alternate-location search with autocomplete and optional time
 - 4ebeac5 feat(mobile): replace numeric hora field with swipe hour/minute stepper
