@@ -90,6 +90,12 @@ ubicación real del usuario, no desde la dirección tipeada).
 - [x] Verificación: `npm run typecheck --workspaces` (0 errores),
       `npx expo export --platform android` (710 módulos, éxito).
 
+### T9 — APK generado (2026-10-22)
+- Build EAS `5b400983-f071-4dda-b4d0-2020e8e7f5d9` (perfil `preview`, commit
+  `980ebc6`): **FINISHED**. Descargado a
+  `C:\data\data\eco\apk\application-eco.apk` (74.86 MB).
+  Link directo: https://expo.dev/artifacts/eas/zqhx0UfQIhI774fNJq2dweR0yAvIRFxIkk2RWsh9rbg.apk
+
 ## Commits
 - e186e3a feat(mobile): add alternate-location search with autocomplete and optional time
 - 4ebeac5 feat(mobile): replace numeric hora field with swipe hour/minute stepper
