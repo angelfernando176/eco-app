@@ -96,10 +96,27 @@ ubicación real del usuario, no desde la dirección tipeada).
   `C:\data\data\eco\apk\application-eco.apk` (74.86 MB).
   Link directo: https://expo.dev/artifacts/eas/zqhx0UfQIhI774fNJq2dweR0yAvIRFxIkk2RWsh9rbg.apk
 
+## Mejora: direcciones genéricas en el autocompletado (2026-10-23)
+El usuario reportó que, con un solo campo de texto libre, Nominatim devolvía
+direcciones demasiado genéricas. Se reemplazó por el modo de búsqueda
+estructurada de Nominatim (parámetros `city`/`street` en vez de `q` libre) y
+se dividió la UI en tres campos: Ciudad, Calle principal, Calle secundaria
+(opcional) — como se expresan las direcciones en Ecuador. La sugerencia
+elegida se muestra como texto de confirmación, no se reescribe en los
+campos.
+
+- [x] T10 — `geocoding.ts`: `searchPlacesStructured({ city, mainStreet,
+      secondaryStreet })` vs. el anterior `searchPlaces(query)` de texto
+      libre; dispara búsqueda cuando `city` tiene >= 3 caracteres.
+      `SearchScreen.tsx`: 3 `TextField` reemplazan el campo único.
+- [x] Verificación: `npm run typecheck --workspaces` (0 errores),
+      `npx expo export --platform android` (710 módulos, éxito).
+
 ## Commits
 - e186e3a feat(mobile): add alternate-location search with autocomplete and optional time
 - 4ebeac5 feat(mobile): replace numeric hora field with swipe hour/minute stepper
 - b4feaf8 fix(mobile): send User-Agent header on Nominatim geocoding requests
+- b91d03d feat(mobile): split alternate-location address into city/main/secondary street fields
 
 ## Verificación
 - `npm run typecheck --workspaces`: 0 errores.
