@@ -126,12 +126,25 @@ inicial.
 - [x] Verificación: `npm run typecheck --workspaces` (0 errores),
       `npx expo export --platform android` (710 módulos, éxito).
 
+## Mejora: deshabilitar Buscar hasta completar campos requeridos (2026-10-23)
+Pedido: "Buscar" no debe activarse si "qué deseas buscar" tiene 2 caracteres
+o menos. Si el panel "Buscar en otro lugar" está abierto, además requiere
+ciudad, calle principal y calle secundaria completas.
+
+- [x] T12 — `SearchScreen.tsx`: `puedeBuscar` (term.trim().length > 2, y si
+      `otroLugarAbierto` también ciudad/callePrincipal/calleSecundaria no
+      vacíos) controla `disabled` en ambos botones "Buscar" (el de arriba y
+      el del final del panel).
+- [x] Verificación: `npm run typecheck --workspaces` (0 errores),
+      `npx expo export --platform android` (710 módulos, éxito).
+
 ## Commits
 - e186e3a feat(mobile): add alternate-location search with autocomplete and optional time
 - 4ebeac5 feat(mobile): replace numeric hora field with swipe hour/minute stepper
 - b4feaf8 fix(mobile): send User-Agent header on Nominatim geocoding requests
 - b91d03d feat(mobile): split alternate-location address into city/main/secondary street fields
 - 4639943 feat(mobile): move Buscar button below alternate-location panel, add Buscar aqui toggle
+- 0311ee3 feat(mobile): disable Buscar until required search fields are filled
 
 ## Verificación
 - `npm run typecheck --workspaces`: 0 errores.
