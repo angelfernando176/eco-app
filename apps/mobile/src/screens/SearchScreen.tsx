@@ -158,6 +158,11 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
   }
 
   const region = center ? regionForRadius(center, radiusKm) : null
+  const terminoValido = term.trim().length > 2
+  const puedeBuscar =
+    terminoValido &&
+    (!otroLugarAbierto ||
+      (ciudadTexto.trim().length > 0 && callePrincipalTexto.trim().length > 0 && calleSecundariaTexto.trim().length > 0))
 
   return (
     <View style={styles.container}>
@@ -194,7 +199,13 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
 
             {!otroLugarAbierto ? (
               <View style={styles.buttonRow}>
-                <Button title="Buscar" onPress={handleBuscar} loading={status === 'loading'} style={styles.rowButton} />
+                <Button
+                  title="Buscar"
+                  onPress={handleBuscar}
+                  loading={status === 'loading'}
+                  disabled={!puedeBuscar}
+                  style={styles.rowButton}
+                />
                 <Button
                   title="Buscar en otro lugar"
                   variant="ghost"
@@ -274,7 +285,13 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
                 </View>
 
                 <View style={styles.buttonRow}>
-                  <Button title="Buscar" onPress={handleBuscar} loading={status === 'loading'} style={styles.rowButton} />
+                  <Button
+                    title="Buscar"
+                    onPress={handleBuscar}
+                    loading={status === 'loading'}
+                    disabled={!puedeBuscar}
+                    style={styles.rowButton}
+                  />
                   <Button
                     title="Buscar aquí"
                     variant="ghost"
