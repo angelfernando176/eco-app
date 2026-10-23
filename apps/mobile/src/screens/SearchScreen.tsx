@@ -192,15 +192,17 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
               </View>
             </View>
 
-            <View style={styles.buttonRow}>
-              <Button title="Buscar" onPress={handleBuscar} loading={status === 'loading'} style={styles.rowButton} />
-              <Button
-                title="Buscar en otro lugar"
-                variant="ghost"
-                onPress={() => setOtroLugarAbierto((open) => !open)}
-                style={styles.rowButton}
-              />
-            </View>
+            {!otroLugarAbierto ? (
+              <View style={styles.buttonRow}>
+                <Button title="Buscar" onPress={handleBuscar} loading={status === 'loading'} style={styles.rowButton} />
+                <Button
+                  title="Buscar en otro lugar"
+                  variant="ghost"
+                  onPress={() => setOtroLugarAbierto(true)}
+                  style={styles.rowButton}
+                />
+              </View>
+            ) : null}
 
             {otroLugarAbierto ? (
               <View style={styles.otroLugarPanel}>
@@ -269,6 +271,16 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
                   ) : (
                     <Button title="Agregar hora" variant="ghost" onPress={handleToggleHora} style={styles.quitarHoraButton} />
                   )}
+                </View>
+
+                <View style={styles.buttonRow}>
+                  <Button title="Buscar" onPress={handleBuscar} loading={status === 'loading'} style={styles.rowButton} />
+                  <Button
+                    title="Buscar aquí"
+                    variant="ghost"
+                    onPress={() => setOtroLugarAbierto(false)}
+                    style={styles.rowButton}
+                  />
                 </View>
               </View>
             ) : null}
