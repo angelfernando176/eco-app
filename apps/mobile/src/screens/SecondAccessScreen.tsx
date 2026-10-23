@@ -7,19 +7,19 @@ import { syncPending } from '../services/sync'
 import { colors, spacing, typography } from '../theme'
 
 export interface SecondAccessScreenProps {
+  nombre: string
   negocioExistente: boolean
   onContinuar: () => void
   onRegistrarTelefono: () => void
   onVerNegocio: () => void
-  onVerNegociosAdmin: () => void
 }
 
 export function SecondAccessScreen({
+  nombre,
   negocioExistente,
   onContinuar,
   onRegistrarTelefono,
   onVerNegocio,
-  onVerNegociosAdmin,
 }: SecondAccessScreenProps) {
   const [sincronizando, setSincronizando] = useState(false)
   const [aviso, setAviso] = useState<string | null>(null)
@@ -47,11 +47,7 @@ export function SecondAccessScreen({
   return (
     <View style={styles.container}>
       <Text style={styles.title}>ECO</Text>
-      <Text style={styles.welcome}>
-        {negocioExistente
-          ? 'Bienvenido a ECO. Puedes ver tu negocio o continuar.'
-          : 'Bienvenido a ECO. Si quieres registrar tu negocio debes dar clic en Registrar.'}
-      </Text>
+      <Text style={styles.welcome}>Hola {nombre}, bienvenido a ECO.</Text>
       {aviso ? <Banner variant="error" message={aviso} /> : null}
 
       <View style={styles.row}>
@@ -85,8 +81,6 @@ export function SecondAccessScreen({
           />
         </View>
       ) : null}
-
-      <Button title="Ver negocios (admin)" variant="ghost" onPress={onVerNegociosAdmin} style={styles.adminLink} />
     </View>
   )
 }
@@ -119,8 +113,5 @@ const styles = StyleSheet.create({
   },
   rowButton: {
     flex: 1,
-  },
-  adminLink: {
-    marginTop: spacing[4],
   },
 })

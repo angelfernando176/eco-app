@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
-import { guardarIngreso, obtenerIngreso, type Ingreso } from './src/db/ingreso'
+import {
+  actualizarRol,
+  guardarCredenciales,
+  guardarIngreso,
+  marcarIngresoSincronizado,
+  obtenerIngreso,
+  type Ingreso,
+} from './src/db/ingreso'
 import { initLocalDatabase } from './src/db/database'
 import { obtenerNegocioLocal, prepararBajaPendiente, type Negocio } from './src/db/negocio'
 import { AppHeader } from './src/components/AppHeader'
@@ -59,8 +66,21 @@ export default function App() {
     }
   }, [])
 
-  function handlePrimerAccesoCompletado(nombre: string, rangoEdad: string) {
+  function handlePrimerAccesoCompletado(
+    nombre: string,
+    rangoEdad: string,
+    email: string,
+    password: string,
+    remoteUserId: string,
+    role: 'none' | 'subscribed' | 'admin'
+  ) {
     guardarIngreso(nombre, rangoEdad)
+    const nuevoIngreso = obtenerIngreso()
+    if (nuevoIngreso) {
+      guardarCredenciales(nuevoIngreso.id, email, password)
+      actualizarRol(nuevoIngreso.id, role)
+      marcarIngresoSincronizado(nuevoIngreso.id, remoteUserId)
+    }
     setIngreso(obtenerIngreso())
     setFase('segundo')
   }
@@ -139,11 +159,11 @@ export default function App() {
       <>
         <AppHeader mode="home" onAction={() => {}} />
         <SecondAccessScreen
+          nombre={ingreso?.nombre ?? ''}
           negocioExistente={negocioExistente}
           onContinuar={handleContinuar}
           onRegistrarTelefono={handleRegistrarTelefono}
           onVerNegocio={handleVerNegocio}
-          onVerNegociosAdmin={() => setFase('adminLogin')}
         />
         <StatusBar style="auto" />
       </>

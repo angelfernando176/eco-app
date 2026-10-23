@@ -78,6 +78,15 @@ export const MIGRATIONS: Migration[] = [
     version: 5,
     statements: [`ALTER TABLE busquedas ADD COLUMN hora_buscada TEXT;`],
   },
+  {
+    version: 6,
+    statements: [
+      `ALTER TABLE ingreso ADD COLUMN email TEXT;`,
+      `ALTER TABLE ingreso ADD COLUMN password TEXT;`,
+      `ALTER TABLE ingreso ADD COLUMN role TEXT;`,
+      `ALTER TABLE ingreso ADD COLUMN subscription_checked_at TEXT;`,
+    ],
+  },
 ]
 
 export function pendingMigrations(currentVersion: number): Migration[] {
