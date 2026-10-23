@@ -101,7 +101,16 @@ van a necesitar:
       duplicado, pero la RPC devuelve el mensaje en inglés ("already
       exists") — corregido a `/already exists/i` y agregado el caso
       "invalid email".
-- [ ] T7 — Generar APK (EAS build) para pruebas del usuario.
+- [x] T7 — Generar APK (EAS build) para pruebas del usuario.
+
+### T7 — APK generado (2026-10-23)
+- Build EAS `ed3d61fa-37a9-4f64-acc8-07630c537fdb` (perfil `preview`, commit
+  `747f82b`): **FINISHED**. Descargado a
+  `C:\data\data\eco\apk\application-eco.apk` (74.9 MB).
+  Link directo: https://expo.dev/artifacts/eas/WpB6pp7q1Fx_aAGi9iZBhg1pO8khlb59bCWALtK85ig.apk
+
+## Commits
+- 747f82b feat(mobile): email+password accounts for owner/admin role verification
 
 ## Fuera de alcance (features siguientes)
 - Listado de negocios por rol (sin suscripción/con suscripción/admin) y
