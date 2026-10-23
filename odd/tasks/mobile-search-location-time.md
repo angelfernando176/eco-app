@@ -69,9 +69,31 @@ bajar el valor.
   `C:\data\data\eco\apk\application-eco.apk` (74.86 MB).
   Link directo: https://expo.dev/artifacts/eas/7XKw3bCHYxuDAKhDoEtrCmDzEDoIXgg1450_UrWI6h8.apk
 
+## Bug reportado: negocio fuera de rango + autocompletado nunca aparece (2026-10-22)
+El usuario reportó un negocio fuera del radio de búsqueda; investigación descartó
+la fórmula de distancia (Haversine en `geo.ts`, corte exacto correcto en
+`mergeBusinessResults`). Causa real: en "Buscar en otro lugar" nunca
+aparecían sugerencias de Nominatim (siempre `403 Forbidden`, confirmado con
+curl: sin User-Agent o con un User-Agent genérico tipo RN/okhttp Nominatim
+rechaza la request; `geocoding.ts` tragaba el error en silencio y devolvía
+`[]`). Sin sugerencia seleccionada, `lugarSeleccionado` queda `null` y
+`handleBuscar` usa el GPS actual como centro en vez de la dirección
+escrita — de ahí el negocio "fuera de rango" (el radio se midió desde la
+ubicación real del usuario, no desde la dirección tipeada).
+
+- [x] T9 — Fix: agregar header `User-Agent` propio a la request de
+      Nominatim en `geocoding.ts` (solución elegida por el usuario hasta
+      pasar a producción; alternativa evaluada y pospuesta: migrar a
+      Google Places Autocomplete, que no tiene el límite de 1 req/seg
+      global de Nominatim pero requiere facturación en Google Cloud y
+      cambiar el flujo a sesión Autocomplete+Place Details).
+- [x] Verificación: `npm run typecheck --workspaces` (0 errores),
+      `npx expo export --platform android` (710 módulos, éxito).
+
 ## Commits
 - e186e3a feat(mobile): add alternate-location search with autocomplete and optional time
 - 4ebeac5 feat(mobile): replace numeric hora field with swipe hour/minute stepper
+- b4feaf8 fix(mobile): send User-Agent header on Nominatim geocoding requests
 
 ## Verificación
 - `npm run typecheck --workspaces`: 0 errores.
