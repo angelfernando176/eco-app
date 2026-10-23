@@ -47,8 +47,31 @@ pantalla, agregar:
   `C:\data\data\eco\apk\application-eco.apk` (74.86 MB).
   Link directo: https://expo.dev/artifacts/eas/aV9wfCM1r0AFGCrpjQj1vH2reBjOzUjE3ki05NakqIM.apk
 
+## Novedad reportada por el usuario (2026-10-22)
+El campo de hora en "Buscar en otro lugar" abría el teclado numérico del
+dispositivo, lo que obligaba a tipear "HH:MM" a mano y resultaba poco usable.
+Se pidió reemplazarlo por un control táctil: dos cuadros (horas / minutos)
+que el usuario pueda deslizar con el dedo hacia arriba/abajo para subir o
+bajar el valor.
+
+- [x] T6 — `components/TimeStepperField.tsx`: stepper táctil (PanResponder,
+      sin dependencias nuevas) con chevrons ▲/▼ y arrastre vertical para
+      horas (0-23) y minutos (0-59); `SearchScreen.tsx` reemplaza el
+      `TextField` numérico por este componente, con toggle "Agregar
+      hora"/"Quitar hora" dado que el campo sigue siendo opcional.
+- [x] T7 — Verificación: `npm run typecheck --workspaces` (0 errores),
+      `npx expo export --platform android` (710 módulos, éxito).
+- [x] T8 — Generar APK (EAS build) para pruebas del usuario.
+
+### T8 — APK generado (2026-10-22)
+- Build EAS `b5aa63b9-23bc-4bde-ad7d-16b198ab78b6` (perfil `preview`, commit
+  `4ebeac5`): **FINISHED**. Descargado a
+  `C:\data\data\eco\apk\application-eco.apk` (74.86 MB).
+  Link directo: https://expo.dev/artifacts/eas/7XKw3bCHYxuDAKhDoEtrCmDzEDoIXgg1450_UrWI6h8.apk
+
 ## Commits
 - e186e3a feat(mobile): add alternate-location search with autocomplete and optional time
+- 4ebeac5 feat(mobile): replace numeric hora field with swipe hour/minute stepper
 
 ## Verificación
 - `npm run typecheck --workspaces`: 0 errores.
