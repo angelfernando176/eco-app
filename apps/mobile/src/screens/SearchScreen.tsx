@@ -11,7 +11,7 @@ import { TextField } from '../components/TextField'
 import { TimeStepperField } from '../components/TimeStepperField'
 import { googleMapsApiKey } from '../config'
 import { guardarBusqueda } from '../db/busquedas'
-import { searchPlaces, type PlaceSuggestion } from '../services/geocoding'
+import { searchPlacesStructured, type PlaceSuggestion } from '../services/geocoding'
 import { searchBusinesses } from '../services/businessSearch'
 import type { BusinessResult } from '../services/businessSearchLogic'
 import { formatDistance, RADIUS_OPTIONS_KM, regionForRadius, type GeoPoint, type RadiusKm } from '../services/geo'
@@ -58,7 +58,9 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
   const [center, setCenter] = useState<GeoPoint | null>(null)
 
   const [otroLugarAbierto, setOtroLugarAbierto] = useState(false)
-  const [lugarTexto, setLugarTexto] = useState('')
+  const [ciudadTexto, setCiudadTexto] = useState('')
+  const [callePrincipalTexto, setCallePrincipalTexto] = useState('')
+  const [calleSecundariaTexto, setCalleSecundariaTexto] = useState('')
   const [lugarSeleccionado, setLugarSeleccionado] = useState<PlaceSuggestion | null>(null)
   const [sugerencias, setSugerencias] = useState<PlaceSuggestion[]>([])
   const [horaHabilitada, setHoraHabilitada] = useState(false)
@@ -70,24 +72,37 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
       : undefined
 
   useEffect(() => {
-    if (!lugarTexto || lugarSeleccionado) {
+    if (!ciudadTexto || lugarSeleccionado) {
       setSugerencias([])
       return
     }
     const timeoutId = setTimeout(() => {
-      searchPlaces(lugarTexto).then(setSugerencias)
+      searchPlacesStructured({
+        city: ciudadTexto,
+        mainStreet: callePrincipalTexto,
+        secondaryStreet: calleSecundariaTexto,
+      }).then(setSugerencias)
     }, 300)
     return () => clearTimeout(timeoutId)
-  }, [lugarTexto, lugarSeleccionado])
+  }, [ciudadTexto, callePrincipalTexto, calleSecundariaTexto, lugarSeleccionado])
 
-  function handleLugarTextoChange(value: string) {
-    setLugarTexto(value)
+  function handleCiudadTextoChange(value: string) {
+    setCiudadTexto(value)
+    setLugarSeleccionado(null)
+  }
+
+  function handleCallePrincipalTextoChange(value: string) {
+    setCallePrincipalTexto(value)
+    setLugarSeleccionado(null)
+  }
+
+  function handleCalleSecundariaTextoChange(value: string) {
+    setCalleSecundariaTexto(value)
     setLugarSeleccionado(null)
   }
 
   function handleSeleccionarSugerencia(suggestion: PlaceSuggestion) {
     setLugarSeleccionado(suggestion)
-    setLugarTexto(suggestion.label)
     setSugerencias([])
   }
 
@@ -189,12 +204,24 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
 
             {otroLugarAbierto ? (
               <View style={styles.otroLugarPanel}>
-                <View>
+                <View style={styles.lugarCampos}>
                   <TextField
-                    label="Dónde deseas buscar (ciudad, calle principal, calle secundaria):"
-                    value={lugarTexto}
-                    onChangeText={handleLugarTextoChange}
-                    placeholder="Ej: Av. Amazonas, Quito"
+                    label="Ciudad:"
+                    value={ciudadTexto}
+                    onChangeText={handleCiudadTextoChange}
+                    placeholder="Ej: Quito"
+                  />
+                  <TextField
+                    label="Calle principal:"
+                    value={callePrincipalTexto}
+                    onChangeText={handleCallePrincipalTextoChange}
+                    placeholder="Ej: Av. Amazonas"
+                  />
+                  <TextField
+                    label="Calle secundaria (opcional):"
+                    value={calleSecundariaTexto}
+                    onChangeText={handleCalleSecundariaTextoChange}
+                    placeholder="Ej: Naciones Unidas"
                   />
                   {sugerencias.length > 0 && !lugarSeleccionado ? (
                     <View style={styles.sugerenciasList}>
@@ -210,6 +237,11 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
                         </Pressable>
                       ))}
                     </View>
+                  ) : null}
+                  {lugarSeleccionado ? (
+                    <Text style={styles.lugarSeleccionadoText} numberOfLines={2} ellipsizeMode="tail">
+                      Ubicación elegida: {lugarSeleccionado.label}
+                    </Text>
                   ) : null}
                 </View>
 
@@ -358,6 +390,13 @@ const styles = StyleSheet.create({
   },
   otroLugarPanel: {
     gap: spacing[3],
+  },
+  lugarCampos: {
+    gap: spacing[2],
+  },
+  lugarSeleccionadoText: {
+    fontSize: typography.size.sm,
+    color: colors.brand[700],
   },
   sugerenciasList: {
     borderWidth: 1,
