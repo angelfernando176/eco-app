@@ -19,7 +19,8 @@ export async function searchPlaces(query: string): Promise<PlaceSuggestion[]> {
 
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=0&limit=5&email=soporte@eco.app&q=${encodeURIComponent(trimmed)}`
+      `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=0&limit=5&email=soporte@eco.app&q=${encodeURIComponent(trimmed)}`,
+      { headers: { 'User-Agent': 'ECO-App/1.0 (soporte@eco.app)' } }
     )
     if (!response.ok) {
       return []
