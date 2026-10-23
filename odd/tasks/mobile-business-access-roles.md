@@ -106,9 +106,21 @@ alcance en esa feature:
       `BusinessAccessListScreen`/`BusinessAccessDetailScreen` para los 3
       roles); archivos no borrados, solo inalcanzables, por la misma
       decisión que `MobileContentScreen`/`DeactivationSurveyScreen`.
-- [ ] T9 — Generar APK (EAS build) — build único al cierre de esta
+- [x] T9 — Generar APK (EAS build) — build único al cierre de esta
       feature (pedido explícito del usuario: completar todo antes de que
       empiece a probar, para no interrumpirlo a mitad de prueba).
+
+### T9 — APK generado (2026-10-23)
+- Build EAS `e40ebdc3-5c18-4dd6-b619-6d4e75a2d426` (perfil `preview`,
+  commit `f28e3d3`): **FINISHED**. Incluye las dos features completas de
+  hoy (`mobile-user-accounts` + `mobile-business-access-roles`).
+  Descargado a `C:\data\data\eco\apk\application-eco.apk` (74.9 MB).
+  Link directo: https://expo.dev/artifacts/eas/gZjXTIs0l_EBv4EqZT6U3OWgFIUE4gE_bu1BMtqScjw.apk
+
+## Commits
+- 747f82b feat(mobile): email+password accounts for owner/admin role verification
+- 1cb01ad docs(odd): record APK build ed3d61fa for mobile-user-accounts
+- f28e3d3 feat(mobile): role-gated business access list, subscription activation email, 3-option Salir
 
 ## Fuera de alcance (confirmado)
 - Dejar reconectado `MobileContentScreen`/`DeactivationSurveyScreen` a
