@@ -112,11 +112,26 @@ campos.
 - [x] Verificación: `npm run typecheck --workspaces` (0 errores),
       `npx expo export --platform android` (710 módulos, éxito).
 
+## Mejora: ubicación del botón Buscar al abrir el panel (2026-10-23)
+Pedido: al abrir "Buscar en otro lugar", el botón "Buscar" debe bajar al
+final de los campos nuevos (ciudad/calles + hora), y en su lugar original
+debe aparecer "Buscar aquí" (a la derecha de "Buscar", ahora ambos al
+final del panel); "Buscar aquí" colapsa el panel de vuelta al estado
+inicial.
+
+- [x] T11 — `SearchScreen.tsx`: el buttonRow superior ("Buscar"/"Buscar en
+      otro lugar") solo se muestra cuando el panel está cerrado; al abrirse,
+      aparece un nuevo buttonRow al final del panel con "Buscar" (misma
+      función) y "Buscar aquí" (colapsa `otroLugarAbierto`).
+- [x] Verificación: `npm run typecheck --workspaces` (0 errores),
+      `npx expo export --platform android` (710 módulos, éxito).
+
 ## Commits
 - e186e3a feat(mobile): add alternate-location search with autocomplete and optional time
 - 4ebeac5 feat(mobile): replace numeric hora field with swipe hour/minute stepper
 - b4feaf8 fix(mobile): send User-Agent header on Nominatim geocoding requests
 - b91d03d feat(mobile): split alternate-location address into city/main/secondary street fields
+- 4639943 feat(mobile): move Buscar button below alternate-location panel, add Buscar aqui toggle
 
 ## Verificación
 - `npm run typecheck --workspaces`: 0 errores.
