@@ -87,6 +87,10 @@ export const MIGRATIONS: Migration[] = [
       `ALTER TABLE ingreso ADD COLUMN subscription_checked_at TEXT;`,
     ],
   },
+  {
+    version: 7,
+    statements: [`ALTER TABLE negocio DROP COLUMN password;`],
+  },
 ]
 
 export function pendingMigrations(currentVersion: number): Migration[] {

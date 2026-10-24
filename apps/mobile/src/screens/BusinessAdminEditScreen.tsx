@@ -2,22 +2,15 @@ import { useEffect, useState } from 'react'
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { Banner } from '../components/Banner'
 import { Button } from '../components/Button'
-import { HelpTooltip } from '../components/HelpTooltip'
 import { TextField } from '../components/TextField'
 import {
   addSkillAdmin,
   deleteSkillAdmin,
   getBusinessDetailAdmin,
-  resetBusinessPasswordAdmin,
   updateBusinessAdmin,
   type AdminBusinessDetail,
 } from '../services/adminBusinessApi'
-import {
-  validateBusinessInput,
-  validatePassword,
-  type BusinessEditInput,
-  type BusinessFieldError,
-} from '../services/mobileBusinessLogic'
+import { validateBusinessInput, type BusinessEditInput, type BusinessFieldError } from '../services/mobileBusinessLogic'
 import { validateSkillName } from '../services/mobileContentLogic'
 import { colors, spacing, typography } from '../theme'
 
@@ -42,8 +35,6 @@ export function BusinessAdminEditScreen({ businessId, onSaved }: BusinessAdminEd
   const [longitude, setLongitude] = useState('')
   const [productName, setProductName] = useState('')
   const [productPrice, setProductPrice] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmNewPassword, setConfirmNewPassword] = useState('')
   const [skills, setSkills] = useState<{ id: string; name: string }[]>([])
   const [skillName, setSkillName] = useState('')
   const [skillError, setSkillError] = useState<string | undefined>(undefined)
@@ -117,7 +108,6 @@ export function BusinessAdminEditScreen({ businessId, onSaved }: BusinessAdminEd
     const parsedLatitude = Number(latitude.replace(',', '.'))
     const parsedLongitude = Number(longitude.replace(',', '.'))
     const parsedPrice = Number(productPrice.replace(',', '.'))
-    const passwordChanged = newPassword.length > 0
 
     const input: BusinessEditInput = {
       tradeName,
@@ -125,7 +115,6 @@ export function BusinessAdminEditScreen({ businessId, onSaved }: BusinessAdminEd
       phone,
       productName,
       productPrice: parsedPrice,
-      ...(passwordChanged ? { password: newPassword, confirmPassword: confirmNewPassword } : {}),
     }
 
     const validationErrors = validateBusinessInput(input)
@@ -148,10 +137,6 @@ export function BusinessAdminEditScreen({ businessId, onSaved }: BusinessAdminEd
         },
         detail.productId
       )
-
-      if (passwordChanged) {
-        await resetBusinessPasswordAdmin(detail.id, newPassword)
-      }
 
       Alert.alert('Negocio actualizado', 'Los cambios se guardaron correctamente.')
       onSaved()
@@ -223,29 +208,6 @@ export function BusinessAdminEditScreen({ businessId, onSaved }: BusinessAdminEd
         keyboardType="numeric"
         error={errorFor(errors, 'productPrice')}
       />
-
-      <View style={styles.passwordLabelRow}>
-        <Text style={styles.label}>Nueva password</Text>
-        <HelpTooltip message={validatePassword('') ?? ''} />
-      </View>
-      <TextField
-        value={newPassword}
-        onChangeText={setNewPassword}
-        placeholder="Dejar en blanco para no cambiarla"
-        secureTextEntry
-        error={errorFor(errors, 'password')}
-      />
-
-      {newPassword.length > 0 ? (
-        <TextField
-          label="Confirmar nueva password"
-          value={confirmNewPassword}
-          onChangeText={setConfirmNewPassword}
-          placeholder="Confirmar password"
-          secureTextEntry
-          error={errorFor(errors, 'confirmPassword')}
-        />
-      ) : null}
 
       <Text style={styles.label}>Skills</Text>
       {skills.map((skill) => (

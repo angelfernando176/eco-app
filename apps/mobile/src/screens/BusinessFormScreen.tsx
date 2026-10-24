@@ -2,15 +2,10 @@ import { useState } from 'react'
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { Banner } from '../components/Banner'
 import { Button } from '../components/Button'
-import { HelpTooltip } from '../components/HelpTooltip'
 import { TextField } from '../components/TextField'
 import { crearNegocioPendiente } from '../db/negocio'
 import { obtenerIngreso } from '../db/ingreso'
-import {
-  validateBusinessInput,
-  validatePassword,
-  type BusinessFieldError,
-} from '../services/mobileBusinessLogic'
+import { validateBusinessInput, type BusinessFieldError } from '../services/mobileBusinessLogic'
 import { syncPending } from '../services/sync'
 import { colors, spacing, typography } from '../theme'
 
@@ -38,8 +33,6 @@ export function BusinessFormScreen({
   const [productPrice, setProductPrice] = useState('')
   const [phone, setPhone] = useState('')
   const [ruc, setRuc] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
   const [skillName, setSkillName] = useState('')
   const [errors, setErrors] = useState<BusinessFieldError[]>([])
   const [guardando, setGuardando] = useState(false)
@@ -53,8 +46,6 @@ export function BusinessFormScreen({
       phone,
       productName,
       productPrice: parsedPrice,
-      password,
-      confirmPassword,
       skillName,
     }
 
@@ -81,14 +72,10 @@ export function BusinessFormScreen({
       longitude: coords.longitude,
       productName: productName.trim(),
       productPrice: parsedPrice,
-      password,
       skillName: skillName.trim() || undefined,
     })
 
-    Alert.alert(
-      'Negocio registrado',
-      'Recuerda el usuario y password ingresados, estos te permitirán administrar la cuenta de tu negocio en el futuro.'
-    )
+    Alert.alert('Negocio registrado', "Tu negocio fue registrado. Podrás administrarlo desde 'Ver negocio' con tu cuenta.")
 
     const resultado = await syncPending()
     setGuardando(false)
@@ -158,27 +145,6 @@ export function BusinessFormScreen({
       />
 
       <TextField label="RUC" value={ruc} onChangeText={setRuc} placeholder="RUC" error={errorFor(errors, 'ruc')} />
-
-      <View style={styles.passwordLabelRow}>
-        <Text style={styles.label}>Password</Text>
-        <HelpTooltip message={validatePassword('') ?? ''} />
-      </View>
-      <TextField
-        value={password}
-        onChangeText={setPassword}
-        placeholder="Password"
-        secureTextEntry
-        error={errorFor(errors, 'password')}
-      />
-
-      <TextField
-        label="Confirmar Password"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        placeholder="Confirmar password"
-        secureTextEntry
-        error={errorFor(errors, 'confirmPassword')}
-      />
 
       <TextField
         label="Skill (opcional)"

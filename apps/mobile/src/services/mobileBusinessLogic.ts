@@ -23,8 +23,6 @@ export interface BusinessFormInput {
   phone: string
   productName: string
   productPrice: number
-  password: string
-  confirmPassword: string
   skillName?: string
 }
 
@@ -34,21 +32,11 @@ export interface BusinessEditInput {
   phone: string
   productName: string
   productPrice: number
-  password?: string
-  confirmPassword?: string
 }
 
 export interface BusinessFieldError {
-  field: 'tradeName' | 'ruc' | 'phone' | 'productName' | 'productPrice' | 'password' | 'confirmPassword' | 'skillName'
+  field: 'tradeName' | 'ruc' | 'phone' | 'productName' | 'productPrice' | 'skillName'
   message: string
-}
-
-/** Mirrors the exact password rule enforced server-side in 0006 (register_mobile_business/update_mobile_business). */
-export function validatePassword(password: string): string | null {
-  if (password.length < 6 || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
-    return 'La contraseña debe tener al menos 6 caracteres e incluir letras y números.'
-  }
-  return null
 }
 
 export function validateBusinessInput(input: BusinessFormInput | BusinessEditInput): BusinessFieldError[] {
@@ -78,16 +66,6 @@ export function validateBusinessInput(input: BusinessFormInput | BusinessEditInp
     errors.push({ field: 'productPrice', message: 'El precio debe ser un número mayor o igual a 0.' })
   }
 
-  if (input.password) {
-    const passwordError = validatePassword(input.password)
-    if (passwordError) {
-      errors.push({ field: 'password', message: passwordError })
-    }
-    if (input.confirmPassword !== input.password) {
-      errors.push({ field: 'confirmPassword', message: 'Las contraseñas no coinciden.' })
-    }
-  }
-
   if ('skillName' in input && input.skillName && input.skillName.trim().length > 0) {
     const skillError = validateSkillName(input.skillName)
     if (skillError) {
@@ -105,7 +83,6 @@ export interface RegisterBusinessPayload {
   p_phone: string
   p_latitude: number
   p_longitude: number
-  p_password: string
   p_product_name: string
   p_product_price: number
 }
@@ -122,7 +99,6 @@ export function buildRegisterPayload(
     p_phone: input.phone.trim(),
     p_latitude: coords.latitude,
     p_longitude: coords.longitude,
-    p_password: input.password,
     p_product_name: input.productName.trim(),
     p_product_price: input.productPrice,
   }
@@ -138,15 +114,13 @@ export interface UpdateBusinessPayload {
   p_longitude: number
   p_product_name: string
   p_product_price: number
-  p_password: string | null
 }
 
 export function buildUpdatePayload(
   businessRemoteId: string,
   ownerRemoteId: string,
   coords: { latitude: number; longitude: number },
-  input: BusinessEditInput,
-  passwordChanged: boolean
+  input: BusinessEditInput
 ): UpdateBusinessPayload {
   return {
     p_business_id: businessRemoteId,
@@ -158,7 +132,6 @@ export function buildUpdatePayload(
     p_longitude: coords.longitude,
     p_product_name: input.productName.trim(),
     p_product_price: input.productPrice,
-    p_password: passwordChanged && input.password ? input.password : null,
   }
 }
 

@@ -2,16 +2,10 @@ import { useEffect, useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { Banner } from '../components/Banner'
 import { Button } from '../components/Button'
-import { HelpTooltip } from '../components/HelpTooltip'
 import { TextField } from '../components/TextField'
 import { supabase } from '../lib/supabase'
 import { actualizarNegocioPendiente, type Negocio } from '../db/negocio'
-import {
-  validateBusinessInput,
-  validatePassword,
-  type BusinessEditInput,
-  type BusinessFieldError,
-} from '../services/mobileBusinessLogic'
+import { validateBusinessInput, type BusinessEditInput, type BusinessFieldError } from '../services/mobileBusinessLogic'
 import { getCurrentPosition } from '../services/location'
 import { syncPending } from '../services/sync'
 import { colors, spacing, typography } from '../theme'
@@ -40,8 +34,6 @@ export function BusinessManageScreen({
   const [productPrice, setProductPrice] = useState(String(negocio.productPrice))
   const [phone, setPhone] = useState(negocio.phone)
   const [ruc, setRuc] = useState(negocio.ruc)
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
   const [coords, setCoords] = useState({ latitude: negocio.latitude, longitude: negocio.longitude })
   const [errors, setErrors] = useState<BusinessFieldError[]>([])
   const [guardando, setGuardando] = useState(false)
@@ -88,14 +80,12 @@ export function BusinessManageScreen({
 
   async function handleGuardar() {
     const parsedPrice = Number(productPrice.replace(',', '.'))
-    const passwordCambiado = password.length > 0
     const input: BusinessEditInput = {
       tradeName,
       ruc,
       phone,
       productName,
       productPrice: parsedPrice,
-      ...(passwordCambiado ? { password, confirmPassword } : {}),
     }
 
     const validationErrors = validateBusinessInput(input)
@@ -113,7 +103,6 @@ export function BusinessManageScreen({
       longitude: coords.longitude,
       productName: productName.trim(),
       productPrice: parsedPrice,
-      ...(passwordCambiado ? { password } : {}),
     })
 
     const resultado = await syncPending()
@@ -236,29 +225,6 @@ export function BusinessManageScreen({
       />
 
       <TextField label="RUC" value={ruc} onChangeText={setRuc} placeholder="RUC" error={errorFor(errors, 'ruc')} />
-
-      <View style={styles.passwordLabelRow}>
-        <Text style={styles.label}>Password</Text>
-        <HelpTooltip message={validatePassword('') ?? ''} />
-      </View>
-      <TextField
-        value={password}
-        onChangeText={setPassword}
-        placeholder="Dejar en blanco para no cambiarlo"
-        secureTextEntry
-        error={errorFor(errors, 'password')}
-      />
-
-      {password.length > 0 ? (
-        <TextField
-          label="Confirmar Password"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          placeholder="Confirmar password"
-          secureTextEntry
-          error={errorFor(errors, 'confirmPassword')}
-        />
-      ) : null}
 
       <Button title="Guardar" onPress={handleGuardar} loading={guardando} style={styles.saveButton} />
 

@@ -12,7 +12,6 @@ export interface Negocio {
   longitude: number
   productName: string
   productPrice: number
-  password: string | null
   status: string
   pendingAction: 'create' | 'update' | 'deactivate' | null
   pendingReason: string | null
@@ -32,7 +31,6 @@ export interface NuevoNegocio {
   longitude: number
   productName: string
   productPrice: number
-  password: string
   skillName?: string
 }
 
@@ -44,7 +42,6 @@ export interface NegocioPatch {
   longitude: number
   productName: string
   productPrice: number
-  password?: string
 }
 
 interface NegocioRow {
@@ -58,7 +55,6 @@ interface NegocioRow {
   longitude: number
   product_name: string
   product_price: number
-  password: string | null
   status: string
   pending_action: 'create' | 'update' | 'deactivate' | null
   pending_reason: string | null
@@ -81,7 +77,6 @@ function mapRow(row: NegocioRow): Negocio {
     longitude: row.longitude,
     productName: row.product_name,
     productPrice: row.product_price,
-    password: row.password,
     status: row.status,
     pendingAction: row.pending_action,
     pendingReason: row.pending_reason,
@@ -96,7 +91,7 @@ function mapRow(row: NegocioRow): Negocio {
 export function obtenerNegocioLocal(): Negocio | null {
   const row = db.getFirstSync<NegocioRow>(
     `SELECT id, remote_id, owner_remote_id, trade_name, ruc, phone, latitude, longitude,
-            product_name, product_price, password, status, pending_action, pending_reason,
+            product_name, product_price, status, pending_action, pending_reason,
             pending_comment, pending_skill_name, synced_at, created_at, updated_at
      FROM negocio ORDER BY id DESC LIMIT 1`
   )
@@ -107,8 +102,8 @@ export function crearNegocioPendiente(input: NuevoNegocio): void {
   db.runSync(
     `INSERT INTO negocio (
        owner_remote_id, trade_name, ruc, phone, latitude, longitude,
-       product_name, product_price, password, pending_skill_name, status, pending_action
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'create')`,
+       product_name, product_price, pending_skill_name, status, pending_action
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'create')`,
     [
       input.ownerRemoteId,
       input.tradeName,
@@ -118,7 +113,6 @@ export function crearNegocioPendiente(input: NuevoNegocio): void {
       input.longitude,
       input.productName,
       input.productPrice,
-      input.password,
       input.skillName ? input.skillName : null,
     ]
   )
@@ -130,29 +124,6 @@ export function actualizarNegocioPendiente(id: number, patch: NegocioPatch): voi
     [id]
   )
   const nextPendingAction = row?.pending_action === 'create' ? 'create' : 'update'
-
-  if (patch.password !== undefined) {
-    db.runSync(
-      `UPDATE negocio
-       SET trade_name = ?, ruc = ?, phone = ?, latitude = ?, longitude = ?,
-           product_name = ?, product_price = ?, password = ?, pending_action = ?,
-           updated_at = datetime('now')
-       WHERE id = ?`,
-      [
-        patch.tradeName,
-        patch.ruc,
-        patch.phone,
-        patch.latitude,
-        patch.longitude,
-        patch.productName,
-        patch.productPrice,
-        patch.password,
-        nextPendingAction,
-        id,
-      ]
-    )
-    return
-  }
 
   db.runSync(
     `UPDATE negocio
@@ -174,17 +145,14 @@ export function actualizarNegocioPendiente(id: number, patch: NegocioPatch): voi
 }
 
 export function marcarAltaSincronizada(id: number, remoteId: string): void {
-  db.runSync(
-    "UPDATE negocio SET remote_id = ?, password = NULL, pending_action = NULL, synced_at = datetime('now') WHERE id = ?",
-    [remoteId, id]
-  )
+  db.runSync("UPDATE negocio SET remote_id = ?, pending_action = NULL, synced_at = datetime('now') WHERE id = ?", [
+    remoteId,
+    id,
+  ])
 }
 
 export function marcarActualizacionSincronizada(id: number): void {
-  db.runSync(
-    "UPDATE negocio SET password = NULL, pending_action = NULL, synced_at = datetime('now') WHERE id = ?",
-    [id]
-  )
+  db.runSync("UPDATE negocio SET pending_action = NULL, synced_at = datetime('now') WHERE id = ?", [id])
 }
 
 export function prepararBajaPendiente(id: number, reason: string, comment: string): void {

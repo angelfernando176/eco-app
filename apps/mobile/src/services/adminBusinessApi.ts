@@ -155,21 +155,6 @@ export async function updateBusinessAdmin(
   }
 }
 
-export async function resetBusinessPasswordAdmin(businessId: string, newPassword: string): Promise<void> {
-  if (!supabase) {
-    throw new Error('La app no está configurada para conectarse a Supabase.')
-  }
-
-  const { error } = await supabase.rpc('admin_set_business_password', {
-    p_business_id: businessId,
-    p_new_password: newPassword,
-  })
-
-  if (error) {
-    throw error
-  }
-}
-
 export async function addSkillAdmin(businessId: string, ownerId: string, name: string): Promise<void> {
   if (!supabase) {
     throw new Error('La app no está configurada para conectarse a Supabase.')

@@ -69,8 +69,6 @@ export async function syncNegocioPendiente(ownerRemoteId: string): Promise<Busin
         phone: negocio.phone,
         productName: negocio.productName,
         productPrice: negocio.productPrice,
-        password: negocio.password ?? '',
-        confirmPassword: negocio.password ?? '',
       })
       const { data, error } = await supabase.rpc('register_mobile_business', payload)
       if (error) throw error
@@ -82,22 +80,13 @@ export async function syncNegocioPendiente(ownerRemoteId: string): Promise<Busin
     }
 
     if (action === 'update') {
-      const payload = buildUpdatePayload(
-        negocio.remoteId as string,
-        ownerRemoteId,
-        coords,
-        {
-          tradeName: negocio.tradeName,
-          ruc: negocio.ruc,
-          phone: negocio.phone,
-          productName: negocio.productName,
-          productPrice: negocio.productPrice,
-        },
-        Boolean(negocio.password)
-      )
-      if (negocio.password) {
-        payload.p_password = negocio.password
-      }
+      const payload = buildUpdatePayload(negocio.remoteId as string, ownerRemoteId, coords, {
+        tradeName: negocio.tradeName,
+        ruc: negocio.ruc,
+        phone: negocio.phone,
+        productName: negocio.productName,
+        productPrice: negocio.productPrice,
+      })
       const { error } = await supabase.rpc('update_mobile_business', payload)
       if (error) throw error
       marcarActualizacionSincronizada(negocio.id)
