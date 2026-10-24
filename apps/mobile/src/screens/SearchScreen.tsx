@@ -11,7 +11,13 @@ import { TextField } from '../components/TextField'
 import { TimeStepperField } from '../components/TimeStepperField'
 import { googleMapsApiKey } from '../config'
 import { guardarBusqueda } from '../db/busquedas'
-import { searchPlacesStructured, type PlaceSuggestion } from '../services/geocoding'
+import {
+  searchCities,
+  searchPlacesStructured,
+  searchStreets,
+  type CitySuggestion,
+  type PlaceSuggestion,
+} from '../services/geocoding'
 import { searchBusinesses } from '../services/businessSearch'
 import type { BusinessResult } from '../services/businessSearchLogic'
 import { formatDistance, RADIUS_OPTIONS_KM, regionForRadius, type GeoPoint, type RadiusKm } from '../services/geo'
@@ -59,7 +65,11 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
 
   const [otroLugarAbierto, setOtroLugarAbierto] = useState(false)
   const [ciudadTexto, setCiudadTexto] = useState('')
+  const [ciudadConfirmada, setCiudadConfirmada] = useState(false)
+  const [ciudadSugerencias, setCiudadSugerencias] = useState<CitySuggestion[]>([])
   const [callePrincipalTexto, setCallePrincipalTexto] = useState('')
+  const [callePrincipalConfirmada, setCallePrincipalConfirmada] = useState(false)
+  const [calleSugerencias, setCalleSugerencias] = useState<string[]>([])
   const [calleSecundariaTexto, setCalleSecundariaTexto] = useState('')
   const [lugarSeleccionado, setLugarSeleccionado] = useState<PlaceSuggestion | null>(null)
   const [sugerencias, setSugerencias] = useState<PlaceSuggestion[]>([])
@@ -72,7 +82,29 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
       : undefined
 
   useEffect(() => {
-    if (!ciudadTexto || lugarSeleccionado) {
+    if (ciudadConfirmada || !ciudadTexto) {
+      setCiudadSugerencias([])
+      return
+    }
+    const timeoutId = setTimeout(() => {
+      searchCities(ciudadTexto).then(setCiudadSugerencias)
+    }, 300)
+    return () => clearTimeout(timeoutId)
+  }, [ciudadTexto, ciudadConfirmada])
+
+  useEffect(() => {
+    if (!ciudadConfirmada || callePrincipalConfirmada || !callePrincipalTexto) {
+      setCalleSugerencias([])
+      return
+    }
+    const timeoutId = setTimeout(() => {
+      searchStreets(ciudadTexto, callePrincipalTexto).then(setCalleSugerencias)
+    }, 300)
+    return () => clearTimeout(timeoutId)
+  }, [ciudadTexto, ciudadConfirmada, callePrincipalTexto, callePrincipalConfirmada])
+
+  useEffect(() => {
+    if (!ciudadConfirmada || !callePrincipalConfirmada || lugarSeleccionado) {
       setSugerencias([])
       return
     }
@@ -84,16 +116,33 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
       }).then(setSugerencias)
     }, 300)
     return () => clearTimeout(timeoutId)
-  }, [ciudadTexto, callePrincipalTexto, calleSecundariaTexto, lugarSeleccionado])
+  }, [ciudadTexto, ciudadConfirmada, callePrincipalTexto, callePrincipalConfirmada, calleSecundariaTexto, lugarSeleccionado])
 
   function handleCiudadTextoChange(value: string) {
     setCiudadTexto(value)
+    setCiudadConfirmada(false)
+    setCallePrincipalTexto('')
+    setCallePrincipalConfirmada(false)
+    setCalleSugerencias([])
     setLugarSeleccionado(null)
+  }
+
+  function handleSeleccionarCiudad(suggestion: CitySuggestion) {
+    setCiudadTexto(suggestion.name)
+    setCiudadConfirmada(true)
+    setCiudadSugerencias([])
   }
 
   function handleCallePrincipalTextoChange(value: string) {
     setCallePrincipalTexto(value)
+    setCallePrincipalConfirmada(false)
     setLugarSeleccionado(null)
+  }
+
+  function handleSeleccionarCalle(street: string) {
+    setCallePrincipalTexto(street)
+    setCallePrincipalConfirmada(true)
+    setCalleSugerencias([])
   }
 
   function handleCalleSecundariaTextoChange(value: string) {
@@ -162,7 +211,7 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
   const puedeBuscar =
     terminoValido &&
     (!otroLugarAbierto ||
-      (ciudadTexto.trim().length > 0 && callePrincipalTexto.trim().length > 0 && calleSecundariaTexto.trim().length > 0))
+      (ciudadConfirmada && callePrincipalConfirmada && calleSecundariaTexto.trim().length > 0))
 
   return (
     <View style={styles.container}>
@@ -224,17 +273,49 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
                     onChangeText={handleCiudadTextoChange}
                     placeholder="Ej: Quito"
                   />
+                  {ciudadSugerencias.length > 0 && !ciudadConfirmada ? (
+                    <View style={styles.sugerenciasList}>
+                      {ciudadSugerencias.map((suggestion, index) => (
+                        <Pressable
+                          key={`${suggestion.name}-${index}`}
+                          onPress={() => handleSeleccionarCiudad(suggestion)}
+                          style={styles.sugerenciaRow}
+                        >
+                          <Text style={styles.sugerenciaText} numberOfLines={1} ellipsizeMode="tail">
+                            {suggestion.name}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  ) : null}
                   <TextField
                     label="Calle principal:"
                     value={callePrincipalTexto}
                     onChangeText={handleCallePrincipalTextoChange}
-                    placeholder="Ej: Av. Amazonas"
+                    editable={ciudadConfirmada}
+                    placeholder={ciudadConfirmada ? 'Ej: Amazonas' : 'Primero elegí una ciudad'}
                   />
+                  {calleSugerencias.length > 0 && !callePrincipalConfirmada ? (
+                    <View style={styles.sugerenciasList}>
+                      {calleSugerencias.map((street, index) => (
+                        <Pressable
+                          key={`${street}-${index}`}
+                          onPress={() => handleSeleccionarCalle(street)}
+                          style={styles.sugerenciaRow}
+                        >
+                          <Text style={styles.sugerenciaText} numberOfLines={1} ellipsizeMode="tail">
+                            {street}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  ) : null}
                   <TextField
                     label="Calle secundaria (opcional):"
                     value={calleSecundariaTexto}
                     onChangeText={handleCalleSecundariaTextoChange}
-                    placeholder="Ej: Naciones Unidas"
+                    editable={callePrincipalConfirmada}
+                    placeholder={callePrincipalConfirmada ? 'Ej: Naciones Unidas' : 'Primero elegí la calle principal'}
                   />
                   {sugerencias.length > 0 && !lugarSeleccionado ? (
                     <View style={styles.sugerenciasList}>

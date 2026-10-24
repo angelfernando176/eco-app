@@ -146,6 +146,27 @@ ciudad, calle principal y calle secundaria completas.
   `C:\data\data\eco\apk\application-eco.apk` (74.86 MB).
   Link directo: https://expo.dev/artifacts/eas/v80laKsFDoU2XEfjANRYh3vdTFzX2h9UIWsyixgmHEY.apk
 
+## Mejora: validación en cascada ciudad/calle con valores reales (2026-10-23)
+Pedido: en los 3 campos del panel "Buscar en otro lugar", cada uno debe
+permitir ingresar solo la información que corresponde: el campo "ciudad"
+solo debe poder completarse con una ciudad real (no cualquier texto), la
+"calle principal" solo con una calle real de esa ciudad, y la "calle
+secundaria" solo se habilita una vez que ciudad y calle principal quedaron
+confirmadas contra Nominatim.
+
+- [x] T13 — `geocoding.ts`: `searchCities(query)` (Nominatim `city=`,
+      filtra `addresstype` de tipo ciudad/pueblo) y `searchStreets(city,
+      query)` (Nominatim `city=`+`street=`, extrae `address.road`).
+      `SearchScreen.tsx`: ciudad y calle principal pasan a requerir elegir
+      una sugerencia de la lista (no texto libre) antes de habilitar el
+      siguiente campo; cambiar el texto de un campo ya confirmado lo
+      reabre y limpia los campos dependientes; `calleSecundaria` queda
+      `editable` solo tras confirmar calle principal; `puedeBuscar` ahora
+      exige `ciudadConfirmada && callePrincipalConfirmada` en vez de solo
+      texto no vacío.
+- [x] Verificación: `npm run typecheck --workspaces` (0 errores),
+      `npx expo export --platform android` (704 módulos, éxito).
+
 ## Commits
 - e186e3a feat(mobile): add alternate-location search with autocomplete and optional time
 - 4ebeac5 feat(mobile): replace numeric hora field with swipe hour/minute stepper
