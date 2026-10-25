@@ -19,6 +19,10 @@ web-build/
 *.key
 *.mobileprovision
 
+# Expo prebuild native output (managed workflow; regenerate with `expo prebuild`)
+apps/mobile/android/
+apps/mobile/ios/
+
 # Logs
 *.log
 npm-debug.*
