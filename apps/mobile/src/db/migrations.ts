@@ -91,6 +91,10 @@ export const MIGRATIONS: Migration[] = [
     version: 7,
     statements: [`ALTER TABLE negocio DROP COLUMN password;`],
   },
+  {
+    version: 8,
+    statements: [`ALTER TABLE ingreso ADD COLUMN gender INTEGER;`],
+  },
 ]
 
 export function pendingMigrations(currentVersion: number): Migration[] {

@@ -68,10 +68,11 @@ export default function App() {
     rangoEdad: string,
     email: string,
     password: string,
+    gender: 1 | 2 | 3,
     remoteUserId: string,
     role: Rol
   ) {
-    guardarIngreso(nombre, rangoEdad)
+    guardarIngreso(nombre, rangoEdad, gender)
     const nuevoIngreso = obtenerIngreso()
     if (nuevoIngreso) {
       guardarCredenciales(nuevoIngreso.id, email, password)

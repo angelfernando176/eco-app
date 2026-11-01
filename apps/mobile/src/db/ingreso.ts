@@ -11,10 +11,11 @@ export interface Ingreso {
   password: string | null
   role: string | null
   subscriptionCheckedAt: string | null
+  gender: number | null
 }
 
-export function guardarIngreso(nombre: string, rangoEdad: string): void {
-  db.runSync('INSERT INTO ingreso (nombre, rango_edad) VALUES (?, ?)', [nombre, rangoEdad])
+export function guardarIngreso(nombre: string, rangoEdad: string, gender: number): void {
+  db.runSync('INSERT INTO ingreso (nombre, rango_edad, gender) VALUES (?, ?, ?)', [nombre, rangoEdad, gender])
 }
 
 export function obtenerIngreso(): Ingreso | null {
@@ -28,8 +29,9 @@ export function obtenerIngreso(): Ingreso | null {
     password: string | null
     role: string | null
     subscription_checked_at: string | null
+    gender: number | null
   }>(
-    'SELECT id, nombre, rango_edad, remote_user_id, synced_at, email, password, role, subscription_checked_at FROM ingreso ORDER BY id DESC LIMIT 1'
+    'SELECT id, nombre, rango_edad, remote_user_id, synced_at, email, password, role, subscription_checked_at, gender FROM ingreso ORDER BY id DESC LIMIT 1'
   )
 
   if (!row) return null
@@ -44,6 +46,7 @@ export function obtenerIngreso(): Ingreso | null {
     password: row.password,
     role: row.role,
     subscriptionCheckedAt: row.subscription_checked_at,
+    gender: row.gender,
   }
 }
 

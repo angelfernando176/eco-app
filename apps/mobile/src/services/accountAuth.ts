@@ -5,6 +5,7 @@ export type AccountVerifyResult =
   | { ok: false }
 
 const DUPLICATE_EMAIL_MESSAGE = 'Ese correo ya tiene una cuenta registrada.'
+const NETWORK_ERROR_MESSAGE = 'No hay conexión con el servidor. Revisa tu internet e intenta nuevamente.'
 
 function mapRegisterErrorToSpanish(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error)
@@ -14,17 +15,27 @@ function mapRegisterErrorToSpanish(error: unknown): string {
   if (/invalid email/i.test(message)) {
     return 'El correo ingresado no es válido.'
   }
+  if (/invalid gender/i.test(message)) {
+    return 'Selecciona un género válido.'
+  }
   if (/password/i.test(message)) {
     return 'La clave debe tener al menos 6 caracteres, con letras y números.'
   }
-  return 'No se pudo crear la cuenta. Intenta nuevamente.'
+  if (/fetch failed|network|timeout|NetworkError/i.test(message)) {
+    return NETWORK_ERROR_MESSAGE
+  }
+  // Error sin clasificar: no lo silenciamos sin rastro, el usuario no tiene
+  // forma de resolverlo si no queda registrado en algún lado para diagnosticar.
+  console.error('[accountAuth] registro fallido con error no reconocido:', error)
+  return `No se pudo crear la cuenta. Intenta nuevamente. (${message.slice(0, 120)})`
 }
 
 export async function registerAccount(
   firstName: string,
   ageRange: string,
   email: string,
-  password: string
+  password: string,
+  gender: 1 | 2 | 3
 ): Promise<{ ok: true; remoteUserId: string } | { ok: false; message: string }> {
   if (!supabase) {
     return { ok: false, message: 'La app no está configurada para conectarse a Supabase.' }
@@ -35,6 +46,7 @@ export async function registerAccount(
     p_age_range: ageRange,
     p_email: email,
     p_password: password,
+    p_gender: gender,
   })
 
   if (error) {
@@ -64,9 +76,10 @@ export async function registerOrLogin(
   firstName: string,
   ageRange: string,
   email: string,
-  password: string
+  password: string,
+  gender: 1 | 2 | 3
 ): Promise<{ ok: true; remoteUserId: string; role: 'none' | 'subscribed' | 'admin' } | { ok: false; message: string }> {
-  const result = await registerAccount(firstName, ageRange, email, password)
+  const result = await registerAccount(firstName, ageRange, email, password, gender)
   if (result.ok) {
     return { ok: true, remoteUserId: result.remoteUserId, role: 'none' }
   }
