@@ -68,4 +68,7 @@ descrita.
   `supabase migration list`.
 
 ## Pendiente
-- Generar nuevo APK (EAS build) con este fix — a pedido del usuario.
+- (cerrado) APK generado localmente con `gradlew assembleDebug` (sin EAS, por
+  decisión del usuario de usar las herramientas de software instaladas) y
+  copiado a `C:\data\data\apk\application-eco.apk`, incluye este fix
+  (commit 03ecf9b).
