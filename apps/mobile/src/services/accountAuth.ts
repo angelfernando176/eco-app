@@ -7,8 +7,21 @@ export type AccountVerifyResult =
 const DUPLICATE_EMAIL_MESSAGE = 'Ese correo ya tiene una cuenta registrada.'
 const NETWORK_ERROR_MESSAGE = 'No hay conexión con el servidor. Revisa tu internet e intenta nuevamente.'
 
+function extractErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message
+  if (
+    error &&
+    typeof error === 'object' &&
+    'message' in error &&
+    typeof (error as { message: unknown }).message === 'string'
+  ) {
+    return (error as { message: string }).message
+  }
+  return String(error)
+}
+
 function mapRegisterErrorToSpanish(error: unknown): string {
-  const message = error instanceof Error ? error.message : String(error)
+  const message = extractErrorMessage(error)
   if (/already exists/i.test(message)) {
     return DUPLICATE_EMAIL_MESSAGE
   }
