@@ -19,8 +19,9 @@ web-build/
 *.key
 *.mobileprovision
 
-# Expo prebuild native output (managed workflow; regenerate with `expo prebuild`)
-apps/mobile/android/
+# apps/mobile/android/ is tracked: it now holds hand-written native code
+# (EcoAccountsModule, mobile-registration-fixes) that `expo prebuild` would
+# not regenerate. iOS has no custom native code or build pipeline yet.
 apps/mobile/ios/
 
 # Logs
