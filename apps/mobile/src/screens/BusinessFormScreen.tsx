@@ -75,12 +75,14 @@ export function BusinessFormScreen({
       skillName: skillName.trim() || undefined,
     })
 
-    Alert.alert('Negocio registrado', "Tu negocio fue registrado. Podrás administrarlo desde 'Ver negocio' con tu cuenta.")
-
     const resultado = await syncPending()
     setGuardando(false)
     if (resultado.error || resultado.businessSync?.ok === false) {
-      setAviso(`${resultado.businessSync?.error ?? resultado.error} Se reintentará más adelante.`)
+      const detalle = resultado.businessSync?.error ?? resultado.error
+      setAviso(`${detalle} Se reintentará más adelante.`)
+      Alert.alert('No se pudo sincronizar tu negocio', `${detalle} Quedó guardado en tu teléfono y se reintentará más adelante.`)
+    } else {
+      Alert.alert('Negocio registrado', "Tu negocio fue registrado. Podrás administrarlo desde 'Ver negocio' con tu cuenta.")
     }
     onSaved()
   }
