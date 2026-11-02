@@ -43,9 +43,15 @@ async function sendViaSmtp(input: SendEmailInput): Promise<SendEmailResult> {
   if (!from) return { ok: false, error: 'Falta configurar MAIL_FROM en el servidor.' }
   if (!Number.isInteger(port) || port <= 0) return { ok: false, error: 'SMTP_PORT no es válido.' }
 
-  const client = new SMTPClient({
-    connection: { hostname, port, tls: port === 465, auth: { username, password } },
-  })
+  let client
+  try {
+    client = new SMTPClient({
+      connection: { hostname, port, tls: port === 465, auth: { username, password } },
+    })
+  } catch (ctorError) {
+    const message = ctorError instanceof Error ? ctorError.message : String(ctorError)
+    return { ok: false, error: `No se pudo inicializar el cliente SMTP: ${message}` }
+  }
 
   try {
     await client.send({ from, to: input.to, subject: input.subject, content: input.text, html: input.html })
@@ -54,7 +60,12 @@ async function sendViaSmtp(input: SendEmailInput): Promise<SendEmailResult> {
     const message = error instanceof Error ? error.message : String(error)
     return { ok: false, error: `No se pudo enviar el correo por SMTP: ${message}` }
   } finally {
-    await client.close().catch(() => {})
+    try {
+      await client.close()
+    } catch {
+      // Closing an already-failed/unopened connection can throw; never let cleanup
+      // override the real send result above.
+    }
   }
 }
 

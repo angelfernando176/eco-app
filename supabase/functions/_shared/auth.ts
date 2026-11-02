@@ -18,8 +18,14 @@ export async function requireAdmin(req: Request): Promise<User> {
     auth: { persistSession: false },
   })
 
-  const { data, error } = await client.auth.getUser()
-  if (error || !data.user) throw new HttpError(401, 'Sesión inválida o expirada.')
+  let data, error
+  try {
+    ;({ data, error } = await client.auth.getUser())
+  } catch (thrown) {
+    const message = thrown instanceof Error ? thrown.message : String(thrown)
+    throw new HttpError(401, `getUser threw: ${message}`)
+  }
+  if (error || !data.user) throw new HttpError(401, `Sesión inválida o expirada. ${error?.message ?? ''}`)
 
   const role = (data.user.app_metadata as Record<string, unknown> | undefined)?.role
   if (role !== 'admin') throw new HttpError(403, 'Se requiere rol de administrador.')

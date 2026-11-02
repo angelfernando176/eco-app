@@ -59,41 +59,59 @@ Deno.serve(async (req) => {
     const client = adminClient()
     const siteUrl = Deno.env.get('SITE_URL') ?? ''
 
-    const { data, error } = await client.auth.admin.generateLink({
-      type: 'invite',
-      email: input.email,
-      options: {
-        data: { first_name: input.firstName, last_name: input.lastName, age_range: input.ageRange },
-        redirectTo: siteUrl,
-      },
-    })
+    let data, error
+    try {
+      ;({ data, error } = await client.auth.admin.generateLink({
+        type: 'invite',
+        email: input.email,
+        options: {
+          data: { first_name: input.firstName, last_name: input.lastName, age_range: input.ageRange },
+          redirectTo: siteUrl,
+        },
+      }))
+    } catch (thrown) {
+      const message = thrown instanceof Error ? thrown.message : String(thrown)
+      throw new HttpError(500, `generateLink threw: ${message}`)
+    }
 
     if (error) {
       const message = error.message.toLowerCase()
       if (message.includes('already') || message.includes('registered') || message.includes('exists')) {
         throw new HttpError(409, 'Ya existe una cuenta con ese correo electrónico.')
       }
-      throw new HttpError(500, 'No se pudo crear la cuenta de usuario.')
+      throw new HttpError(500, `generateLink error: ${error.message}`)
     }
 
     const authUserId = data.user?.id
     if (!authUserId) throw new HttpError(500, 'No se pudo crear la cuenta de usuario.')
 
-    const { data: profile, error: profileError } = await client
-      .from('users')
-      .select('id')
-      .eq('auth_user_id', authUserId)
-      .single()
+    let profile, profileError
+    try {
+      ;({ data: profile, error: profileError } = await client
+        .from('users')
+        .select('id')
+        .eq('auth_user_id', authUserId)
+        .single())
+    } catch (thrown) {
+      const message = thrown instanceof Error ? thrown.message : String(thrown)
+      throw new HttpError(500, `profile lookup threw: ${message}`)
+    }
 
-    if (profileError || !profile) throw new HttpError(500, 'La cuenta se creó pero no se encontró el perfil.')
+    if (profileError || !profile) throw new HttpError(500, `La cuenta se creó pero no se encontró el perfil. ${profileError?.message ?? ''}`)
 
     const actionLink = data.properties?.action_link
     if (!actionLink) {
       return json(200, { created: true, userId: profile.id, emailSent: false, emailError: 'No se generó el enlace de invitación.' })
     }
 
-    const template = accountInvitationTemplate({ firstName: input.firstName, actionLink })
-    const sendResult = await sendEmail({ to: input.email, subject: template.subject, html: template.html, text: template.text })
+    let sendResult
+    try {
+      const template = accountInvitationTemplate({ firstName: input.firstName, actionLink })
+      sendResult = await sendEmail({ to: input.email, subject: template.subject, html: template.html, text: template.text })
+    } catch (thrown) {
+      const message = thrown instanceof Error ? thrown.message : String(thrown)
+      throw new HttpError(500, `template/sendEmail threw: ${message}`)
+    }
 
     if (!sendResult.ok) {
       return json(200, { created: true, userId: profile.id, emailSent: false, emailError: sendResult.error })
