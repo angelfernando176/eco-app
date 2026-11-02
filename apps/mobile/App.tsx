@@ -13,6 +13,7 @@ import {
 import { initLocalDatabase } from './src/db/database'
 import { obtenerNegocioLocal } from './src/db/negocio'
 import { AppHeader } from './src/components/AppHeader'
+import { BusinessAccessCreateScreen } from './src/screens/BusinessAccessCreateScreen'
 import { BusinessAccessDetailScreen } from './src/screens/BusinessAccessDetailScreen'
 import { BusinessAccessListScreen } from './src/screens/BusinessAccessListScreen'
 import { BusinessAdminEditScreen } from './src/screens/BusinessAdminEditScreen'
@@ -44,6 +45,8 @@ type Fase =
   | 'listaNegocios'
   | 'detalleNegocio'
   | 'editarNegocioAdmin'
+  | 'agregarNegocioMapa'
+  | 'agregarNegocioFormulario'
 
 export default function App() {
   const [fase, setFase] = useState<Fase>('cargando')
@@ -51,6 +54,7 @@ export default function App() {
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessResult | null>(null)
   const [negocioExistente, setNegocioExistente] = useState(false)
   const [coordsRegistro, setCoordsRegistro] = useState<GeoPoint | null>(null)
+  const [coordsAgregarNegocio, setCoordsAgregarNegocio] = useState<GeoPoint | null>(null)
   const [accesoNegocios, setAccesoNegocios] = useState<{ ownerId: string; role: Rol } | null>(null)
   const [negocioAccesoId, setNegocioAccesoId] = useState<string | null>(null)
 
@@ -162,6 +166,21 @@ export default function App() {
     setFase('segundo')
   }
 
+  function handleIniciarAgregarNegocio(coords: GeoPoint) {
+    setCoordsAgregarNegocio(coords)
+    setFase('agregarNegocioFormulario')
+  }
+
+  function handleNegocioAgregado() {
+    setCoordsAgregarNegocio(null)
+    setFase('listaNegocios')
+  }
+
+  function handleCancelarAgregarNegocio() {
+    setCoordsAgregarNegocio(null)
+    setFase('listaNegocios')
+  }
+
   if (fase === 'cargando' || fase === 'verificandoAcceso') {
     return (
       <View style={styles.container}>
@@ -220,6 +239,32 @@ export default function App() {
             setNegocioAccesoId(id)
             setFase('detalleNegocio')
           }}
+          onAgregar={accesoNegocios.role !== 'none' ? () => setFase('agregarNegocioMapa') : undefined}
+        />
+        <StatusBar style="auto" />
+      </>
+    )
+  }
+
+  if (fase === 'agregarNegocioMapa' && accesoNegocios) {
+    return (
+      <>
+        <AppHeader mode="back" onAction={handleCancelarAgregarNegocio} />
+        <RegisterMapScreen onIniciarRegistro={handleIniciarAgregarNegocio} onCancel={handleCancelarAgregarNegocio} />
+        <StatusBar style="auto" />
+      </>
+    )
+  }
+
+  if (fase === 'agregarNegocioFormulario' && accesoNegocios && coordsAgregarNegocio) {
+    return (
+      <>
+        <AppHeader mode="back" onAction={handleCancelarAgregarNegocio} />
+        <BusinessAccessCreateScreen
+          ownerId={accesoNegocios.ownerId}
+          coords={coordsAgregarNegocio}
+          onSaved={handleNegocioAgregado}
+          onCancel={handleCancelarAgregarNegocio}
         />
         <StatusBar style="auto" />
       </>

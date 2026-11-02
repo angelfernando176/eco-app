@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { SectionState } from '../components/SectionState'
 import { TextField } from '../components/TextField'
@@ -11,9 +12,10 @@ export interface BusinessAccessListScreenProps {
   role: 'none' | 'subscribed' | 'admin'
   ownerId: string
   onSelect: (businessId: string) => void
+  onAgregar?: () => void
 }
 
-export function BusinessAccessListScreen({ role, ownerId, onSelect }: BusinessAccessListScreenProps) {
+export function BusinessAccessListScreen({ role, ownerId, onSelect, onAgregar }: BusinessAccessListScreenProps) {
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [businesses, setBusinesses] = useState<OwnerBusinessSummary[]>([])
@@ -76,7 +78,10 @@ export function BusinessAccessListScreen({ role, ownerId, onSelect }: BusinessAc
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text style={styles.title}>Negocios</Text>
+            <View style={styles.titleRow}>
+              <Text style={styles.title}>Negocios</Text>
+              {onAgregar ? <Button title="Agregar" variant="secondary" onPress={onAgregar} /> : null}
+            </View>
             {role === 'admin' ? (
               <TextField label="Buscar negocio" value={query} onChangeText={setQuery} placeholder="Nombre del negocio" />
             ) : null}
@@ -116,6 +121,11 @@ const styles = StyleSheet.create({
   },
   header: {
     gap: spacing[3],
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   title: {
     fontSize: typography.size['2xl'],
