@@ -105,7 +105,12 @@ export function useProfile(session: Session | null): UseProfileResult {
     return () => {
       cancelled = true
     }
-  }, [session, version])
+    // Deliberately keyed on the user id, not the whole `session` object: Supabase
+    // reissues a new session object (same user) on every tab-focus/visibility token
+    // refresh, and reloading here would unmount/remount every open form, discarding
+    // unsaved edits for no reason — the profile row itself never depends on the token.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user.id, version])
 
   const reload = useCallback(() => setVersion((v) => v + 1), [])
 
