@@ -23,5 +23,13 @@ export interface UserListFilters extends Partial<Record<SearchableField, string>
   type?: UserTypeValue
 }
 
+/** Whitelisted sortable columns: never pass an arbitrary client-supplied string to `.order()`. */
+export type UserSortField = SearchableField | 'type' | 'created_at'
+export type SortDirection = 'asc' | 'desc'
+export interface UserListSort {
+  field: UserSortField
+  direction: SortDirection
+}
+
 /** Per-row subscription state shown as a badge in the user list (avoids N+1 queries). */
 export type SubscriptionBadgeState = 'active' | 'none'

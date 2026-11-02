@@ -1,9 +1,24 @@
 import { FunctionsHttpError } from '@supabase/supabase-js'
 import type { Subscription, User, UserTypeValue } from '@eco/shared'
 import { supabase } from '../../lib/supabase'
-import type { CreateUserInput, SearchableField, SubscriptionBadgeState, UserInput, UserListFilters } from './types'
+import type {
+  CreateUserInput,
+  SearchableField,
+  SubscriptionBadgeState,
+  UserInput,
+  UserListFilters,
+  UserListSort,
+  UserSortField,
+} from './types'
 
 const SEARCHABLE_FIELDS: SearchableField[] = ['first_name', 'last_name', 'age_range', 'email']
+
+/** Explicit whitelist: a sort column never flows from the client straight into `.order()`. */
+const SORTABLE_FIELDS: UserSortField[] = [...SEARCHABLE_FIELDS, 'type', 'created_at']
+
+function isSortableField(field: string): field is UserSortField {
+  return (SORTABLE_FIELDS as string[]).includes(field)
+}
 
 interface UserRow {
   id: string
@@ -58,6 +73,7 @@ export interface ListUsersParams {
   page: number
   pageSize: number
   filters?: UserListFilters
+  sort?: UserListSort
 }
 
 export interface UserListRow {
@@ -71,16 +87,19 @@ export interface ListUsersResult {
 }
 
 /** Admin-only: lists active users with per-field filters, paginated, newest first. */
-export async function listUsers({ page, pageSize, filters }: ListUsersParams): Promise<ListUsersResult> {
+export async function listUsers({ page, pageSize, filters, sort }: ListUsersParams): Promise<ListUsersResult> {
   const client = requireClient()
   const from = page * pageSize
   const to = from + pageSize - 1
+
+  const sortField = sort && isSortableField(sort.field) ? sort.field : 'created_at'
+  const sortAscending = sort?.direction === 'asc'
 
   let query = client
     .from('users')
     .select('id, first_name, last_name, age_range, email, type, status, created_at', { count: 'exact' })
     .eq('status', 'active')
-    .order('created_at', { ascending: false })
+    .order(sortField, { ascending: sortAscending })
     .range(from, to)
 
   if (filters?.type) query = query.eq('type', filters.type)

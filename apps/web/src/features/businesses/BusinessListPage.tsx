@@ -1,10 +1,21 @@
 import { useEffect, useState } from 'react'
 import type { Business, User } from '@eco/shared'
-import { Alert, Button, ConfirmDialog, DataTable, PageHeader, Pagination, type DataTableColumn } from '../../ui'
+import {
+  Alert,
+  Button,
+  ConfirmDialog,
+  DataTable,
+  EditIcon,
+  IconButton,
+  PageHeader,
+  Pagination,
+  TrashIcon,
+  type DataTableColumn,
+} from '../../ui'
 import { getPlanLimits } from '../plan/rules'
 import { countOwnedBusinesses, deleteBusiness, listBusinesses } from './api'
 import { canCreateBusiness, canDeleteBusiness } from './rules'
-import type { SearchableField } from './types'
+import type { BusinessSortField, SearchableField, SortDirection } from './types'
 
 const PAGE_SIZE = 10
 const FILTER_DEBOUNCE_MS = 300
@@ -70,6 +81,18 @@ export default function BusinessListPage({
   const [deleteTarget, setDeleteTarget] = useState<Business | null>(null)
   const [deleteBusy, setDeleteBusy] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [sortField, setSortField] = useState<BusinessSortField>('created_at')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+
+  function handleSortChange(key: string) {
+    if (key === sortField) {
+      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortField(key as BusinessSortField)
+      setSortDirection('asc')
+    }
+    setPage(0)
+  }
 
   useEffect(() => {
     const handle = setTimeout(() => {
@@ -90,6 +113,7 @@ export default function BusinessListPage({
       page,
       pageSize: PAGE_SIZE,
       filters: appliedFilters,
+      sort: { field: sortField, direction: sortDirection },
     })
       .then((result) => {
         if (cancelled) return
@@ -108,7 +132,7 @@ export default function BusinessListPage({
     }
     // appliedFilters is represented by filtersKey below
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, filtersKey, isAdmin, profile.id, reloadVersion])
+  }, [page, filtersKey, isAdmin, profile.id, reloadVersion, sortField, sortDirection])
 
   useEffect(() => {
     if (isAdmin) return
@@ -154,6 +178,7 @@ export default function BusinessListPage({
     filterable: true,
     filterValue: filterInputs[field] ?? '',
     onFilterChange: (value) => updateFilter(field, value),
+    sortable: true,
   }))
 
   return (
@@ -181,15 +206,14 @@ export default function BusinessListPage({
         rowKey={(row) => row.id}
         loading={loading}
         emptyMessage="No hay negocios registrados."
+        sortKey={sortField}
+        sortDirection={sortDirection}
+        onSortChange={handleSortChange}
         rowActions={(row) => (
           <div className="cluster">
-            <Button type="button" variant="secondary" onClick={() => onEdit(row.id)}>
-              Editar
-            </Button>
+            <IconButton icon={<EditIcon />} label="Editar negocio" onClick={() => onEdit(row.id)} />
             {canDeleteBusiness({ isAdmin }) && (
-              <Button type="button" variant="secondary" onClick={() => setDeleteTarget(row)}>
-                Borrar
-              </Button>
+              <IconButton icon={<TrashIcon />} label="Borrar negocio" danger onClick={() => setDeleteTarget(row)} />
             )}
           </div>
         )}

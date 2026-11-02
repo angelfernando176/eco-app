@@ -1,9 +1,21 @@
 import { useEffect, useState } from 'react'
 import type { User, UserTypeValue } from '@eco/shared'
-import { Alert, Button, ConfirmDialog, DataTable, PageHeader, Pagination, Tag, type DataTableColumn } from '../../ui'
+import {
+  Alert,
+  Button,
+  ConfirmDialog,
+  DataTable,
+  EditIcon,
+  IconButton,
+  PageHeader,
+  Pagination,
+  Tag,
+  TrashIcon,
+  type DataTableColumn,
+} from '../../ui'
 import { deactivateUser, listUsers, type UserListRow } from './api'
 import { canDeactivateUser } from './rules'
-import type { SearchableField } from './types'
+import type { SearchableField, SortDirection, UserSortField } from './types'
 
 const PAGE_SIZE = 10
 const FILTER_DEBOUNCE_MS = 300
@@ -54,6 +66,18 @@ export default function UserListPage({ profile, onCreate, onEdit }: UserListPage
   const [deactivateTarget, setDeactivateTarget] = useState<User | null>(null)
   const [deactivateBusy, setDeactivateBusy] = useState(false)
   const [deactivateError, setDeactivateError] = useState<string | null>(null)
+  const [sortField, setSortField] = useState<UserSortField>('created_at')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+
+  function handleSortChange(key: string) {
+    if (key === sortField) {
+      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortField(key as UserSortField)
+      setSortDirection('asc')
+    }
+    setPage(0)
+  }
 
   useEffect(() => {
     const handle = setTimeout(() => {
@@ -74,6 +98,7 @@ export default function UserListPage({ profile, onCreate, onEdit }: UserListPage
       page,
       pageSize: PAGE_SIZE,
       filters: { ...appliedFilters, type: appliedType || undefined },
+      sort: { field: sortField, direction: sortDirection },
     })
       .then((result) => {
         if (cancelled) return
@@ -92,7 +117,7 @@ export default function UserListPage({ profile, onCreate, onEdit }: UserListPage
     }
     // appliedFilters is represented by filtersKey below
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, filtersKey, appliedType, reloadVersion])
+  }, [page, filtersKey, appliedType, reloadVersion, sortField, sortDirection])
 
   function updateFilter(field: SearchableField, value: string) {
     setFilterInputs((prev) => ({ ...prev, [field]: value }))
@@ -121,8 +146,9 @@ export default function UserListPage({ profile, onCreate, onEdit }: UserListPage
       filterable: true,
       filterValue: filterInputs[field] ?? '',
       onFilterChange: (value: string) => updateFilter(field, value),
+      sortable: true,
     })),
-    { key: 'type', header: 'Tipo', render: (row) => formatType(row.user.type) },
+    { key: 'type', header: 'Tipo', render: (row) => formatType(row.user.type), sortable: true },
     {
       key: 'subscription',
       header: 'Suscripción',
@@ -167,23 +193,22 @@ export default function UserListPage({ profile, onCreate, onEdit }: UserListPage
         rowKey={(row) => row.user.id}
         loading={loading}
         emptyMessage="No hay usuarios registrados."
+        sortKey={sortField}
+        sortDirection={sortDirection}
+        onSortChange={handleSortChange}
         rowActions={(row) => {
           const isSelf = row.user.id === profile.id
           const canDeactivate = canDeactivateUser({ isSelf })
           return (
             <div className="cluster">
-              <Button type="button" variant="secondary" onClick={() => onEdit(row.user.id)}>
-                Editar
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
+              <IconButton icon={<EditIcon />} label="Editar usuario" onClick={() => onEdit(row.user.id)} />
+              <IconButton
+                icon={<TrashIcon />}
+                label={canDeactivate ? 'Borrar usuario' : 'No podés borrar tu propio usuario'}
                 disabled={!canDeactivate}
-                title={!canDeactivate ? 'No podés borrar tu propio usuario.' : undefined}
+                danger
                 onClick={() => setDeactivateTarget(row.user)}
-              >
-                Borrar
-              </Button>
+              />
             </div>
           )
         }}

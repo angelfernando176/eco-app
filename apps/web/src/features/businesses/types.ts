@@ -28,6 +28,14 @@ export interface CreateBusinessInput extends BusinessInput {
   ownerId: string
 }
 
+/** Whitelisted sortable columns: never pass an arbitrary client-supplied string to `.order()`. */
+export type BusinessSortField = SearchableField | 'created_at'
+export type SortDirection = 'asc' | 'desc'
+export interface BusinessListSort {
+  field: BusinessSortField
+  direction: SortDirection
+}
+
 /** Web user option for the admin's owner picker when creating a business. */
 export interface WebUserOption {
   id: string

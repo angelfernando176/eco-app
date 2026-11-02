@@ -1,6 +1,13 @@
 import type { Business } from '@eco/shared'
 import { supabase } from '../../lib/supabase'
-import type { BusinessInput, CreateBusinessInput, SearchableField, WebUserOption } from './types'
+import type {
+  BusinessInput,
+  BusinessListSort,
+  BusinessSortField,
+  CreateBusinessInput,
+  SearchableField,
+  WebUserOption,
+} from './types'
 
 const SEARCHABLE_FIELDS: SearchableField[] = [
   'trade_name',
@@ -12,6 +19,13 @@ const SEARCHABLE_FIELDS: SearchableField[] = [
   'number',
   'reference',
 ]
+
+/** Explicit whitelist: a sort column never flows from the client straight into `.order()`. */
+const SORTABLE_FIELDS: BusinessSortField[] = [...SEARCHABLE_FIELDS, 'created_at']
+
+function isSortableField(field: string): field is BusinessSortField {
+  return (SORTABLE_FIELDS as string[]).includes(field)
+}
 
 interface BusinessRow {
   id: string
@@ -99,6 +113,7 @@ export interface ListBusinessesParams {
   page: number
   pageSize: number
   filters?: Partial<Record<SearchableField, string>>
+  sort?: BusinessListSort
 }
 
 export interface ListBusinessesResult {
@@ -111,15 +126,19 @@ export async function listBusinesses({
   page,
   pageSize,
   filters,
+  sort,
 }: ListBusinessesParams): Promise<ListBusinessesResult> {
   const client = requireClient()
   const from = page * pageSize
   const to = from + pageSize - 1
 
+  const sortField = sort && isSortableField(sort.field) ? sort.field : 'created_at'
+  const sortAscending = sort?.direction === 'asc'
+
   let query = client
     .from('businesses')
     .select('*', { count: 'exact' })
-    .order('created_at', { ascending: false })
+    .order(sortField, { ascending: sortAscending })
     .range(from, to)
 
   if (ownerId) query = query.eq('owner_id', ownerId)
