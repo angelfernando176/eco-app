@@ -10,9 +10,10 @@ import { colors, spacing, typography } from '../theme'
 export interface BusinessAccessDetailScreenProps {
   businessId: string
   role: 'none' | 'subscribed' | 'admin'
+  onEditarAdmin?: () => void
 }
 
-export function BusinessAccessDetailScreen({ businessId, role }: BusinessAccessDetailScreenProps) {
+export function BusinessAccessDetailScreen({ businessId, role, onEditarAdmin }: BusinessAccessDetailScreenProps) {
   const [negocio, setNegocio] = useState<BusinessAccessDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -49,6 +50,10 @@ export function BusinessAccessDetailScreen({ businessId, role }: BusinessAccessD
   }
 
   function handleActualizarInformacion() {
+    if (role === 'admin' && onEditarAdmin) {
+      onEditarAdmin()
+      return
+    }
     void Linking.openURL(ecoWebUrl)
   }
 

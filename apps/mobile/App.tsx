@@ -15,6 +15,7 @@ import { obtenerNegocioLocal } from './src/db/negocio'
 import { AppHeader } from './src/components/AppHeader'
 import { BusinessAccessDetailScreen } from './src/screens/BusinessAccessDetailScreen'
 import { BusinessAccessListScreen } from './src/screens/BusinessAccessListScreen'
+import { BusinessAdminEditScreen } from './src/screens/BusinessAdminEditScreen'
 import { BusinessDetailScreen } from './src/screens/BusinessDetailScreen'
 import { BusinessFormScreen } from './src/screens/BusinessFormScreen'
 import { FirstAccessScreen } from './src/screens/FirstAccessScreen'
@@ -42,6 +43,7 @@ type Fase =
   | 'verificarClave'
   | 'listaNegocios'
   | 'detalleNegocio'
+  | 'editarNegocioAdmin'
 
 export default function App() {
   const [fase, setFase] = useState<Fase>('cargando')
@@ -228,7 +230,21 @@ export default function App() {
     return (
       <>
         <AppHeader mode="back" onAction={() => setFase('listaNegocios')} />
-        <BusinessAccessDetailScreen businessId={negocioAccesoId} role={accesoNegocios.role} />
+        <BusinessAccessDetailScreen
+          businessId={negocioAccesoId}
+          role={accesoNegocios.role}
+          onEditarAdmin={() => setFase('editarNegocioAdmin')}
+        />
+        <StatusBar style="auto" />
+      </>
+    )
+  }
+
+  if (fase === 'editarNegocioAdmin' && accesoNegocios?.role === 'admin' && negocioAccesoId) {
+    return (
+      <>
+        <AppHeader mode="back" onAction={() => setFase('detalleNegocio')} />
+        <BusinessAdminEditScreen businessId={negocioAccesoId} onSaved={() => setFase('detalleNegocio')} />
         <StatusBar style="auto" />
       </>
     )
