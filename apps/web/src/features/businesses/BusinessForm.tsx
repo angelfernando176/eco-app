@@ -290,8 +290,10 @@ export default function BusinessForm({ profile, isAdmin, plan, business, onCreat
 
       <section className="form-section">
         <h3 className="form-section__title">Ubicación</h3>
-        <div className="form-grid">
-          <div className="coords-row field--full-width">
+
+        <div className="form-subsection">
+          <h4 className="form-subsection__title">Coordenadas</h4>
+          <div className="coords-row">
             <Field
               label="Latitud"
               value={form.latitude}
@@ -319,7 +321,7 @@ export default function BusinessForm({ profile, isAdmin, plan, business, onCreat
               ¿?
             </button>
           </div>
-          <div className="field--full-width">
+          <div>
             <Button
               type="button"
               variant="secondary"
@@ -349,42 +351,48 @@ export default function BusinessForm({ profile, isAdmin, plan, business, onCreat
               </Alert>
             )}
           </div>
-          <Field
-            label="Calle principal"
-            value={form.mainStreet}
-            onChange={(e) => setField('mainStreet', e.target.value)}
-            error={fieldErrors.mainStreet}
-            maxLength={BUSINESS_FIELD_LIMITS.mainStreet.max}
-            required
-          />
-          <Field
-            label="Calle secundaria"
-            value={form.secondaryStreet}
-            onChange={(e) => setField('secondaryStreet', e.target.value)}
-            error={fieldErrors.secondaryStreet}
-            maxLength={BUSINESS_FIELD_LIMITS.secondaryStreet.max}
-            required
-          />
-          <Field
-            label="Número"
-            value={form.number}
-            onChange={(e) => setField('number', e.target.value)}
-            error={fieldErrors.number}
-            maxLength={BUSINESS_FIELD_LIMITS.number.max}
-            required
-          />
-          <div className="field--full-width">
+        </div>
+
+        <div className="form-subsection">
+          <h4 className="form-subsection__title">Dirección</h4>
+          <div className="form-grid">
             <Field
-              as="textarea"
-              label="Referencia"
-              value={form.reference}
-              onChange={(e) => setField('reference', e.target.value)}
-              error={fieldErrors.reference}
-              maxLength={BUSINESS_FIELD_LIMITS.reference.max}
-              showCounter
-              rows={5}
+              label="Calle principal"
+              value={form.mainStreet}
+              onChange={(e) => setField('mainStreet', e.target.value)}
+              error={fieldErrors.mainStreet}
+              maxLength={BUSINESS_FIELD_LIMITS.mainStreet.max}
               required
             />
+            <Field
+              label="Calle secundaria"
+              value={form.secondaryStreet}
+              onChange={(e) => setField('secondaryStreet', e.target.value)}
+              error={fieldErrors.secondaryStreet}
+              maxLength={BUSINESS_FIELD_LIMITS.secondaryStreet.max}
+              required
+            />
+            <Field
+              label="Número"
+              value={form.number}
+              onChange={(e) => setField('number', e.target.value)}
+              error={fieldErrors.number}
+              maxLength={BUSINESS_FIELD_LIMITS.number.max}
+              required
+            />
+            <div className="field--full-width">
+              <Field
+                as="textarea"
+                label="Referencia"
+                value={form.reference}
+                onChange={(e) => setField('reference', e.target.value)}
+                error={fieldErrors.reference}
+                maxLength={BUSINESS_FIELD_LIMITS.reference.max}
+                showCounter
+                rows={5}
+                required
+              />
+            </div>
           </div>
         </div>
       </section>

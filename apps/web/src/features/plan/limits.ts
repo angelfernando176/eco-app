@@ -15,8 +15,8 @@ export interface PlanLimits {
 const ADMIN_LIMITS: PlanLimits = {
   businesses: null,
   products: null,
-  imagesPerProduct: null,
-  videosPerBusiness: null,
+  imagesPerProduct: 10,
+  videosPerBusiness: 10,
   skills: null,
   canUploadLogo: true,
   canManageImages: true,

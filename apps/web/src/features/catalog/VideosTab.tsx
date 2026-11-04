@@ -1,11 +1,19 @@
 import { useEffect, useState } from 'react'
-import { Alert, Button, ConfirmDialog, Field, FileInput } from '../../ui'
+import { Alert, Button, ConfirmDialog, Field, FileInput, InfoTooltip } from '../../ui'
 import type { BusinessTabProps } from '../businesses/tabTypes'
 import { isUnderLimit } from '../plan/rules'
 import { addVideo, deleteVideo, listProducts, listVideos, replaceVideo } from './api'
 import type { Product, Video } from './types'
 
-const VIDEO_ACCEPT = 'video/mp4,video/webm,video/quicktime'
+const VIDEO_ACCEPT = 'video/mp4'
+const VIDEO_RESTRICTIONS_TOOLTIP = [
+  'Videos por negocio:',
+  'Administrador: 10',
+  'Sin suscripción: 0 (suscribite para habilitar la carga)',
+  'Con suscripción: 2 por negocio',
+  'Peso máximo: 20 MB',
+  'Formato: MP4',
+]
 
 export default function VideosTab({ business, plan }: BusinessTabProps) {
   const [videos, setVideos] = useState<Video[]>([])
@@ -150,7 +158,7 @@ export default function VideosTab({ business, plan }: BusinessTabProps) {
                 <FileInput
                   label="Reemplazar"
                   accept={VIDEO_ACCEPT}
-                  hint="Hasta 50 MB."
+                  hint="Hasta 20 MB."
                   disabled={busyVideoId === video.id}
                   onFileSelected={(file) => handleReplaceVideo(video.id, file)}
                 />
@@ -175,12 +183,17 @@ export default function VideosTab({ business, plan }: BusinessTabProps) {
       {videoError && <Alert tone="error">{videoError}</Alert>}
 
       <div className="videos-tab__add">
-        {!hasProducts && <span className="field__hint">Primero agregá un producto en la pestaña Menú.</span>}
+        <div className="videos-tab__add-header">
+          <h5 className="videos-tab__add-title">Agregar video</h5>
+          <InfoTooltip label="Restricciones de carga de videos" lines={VIDEO_RESTRICTIONS_TOOLTIP} />
+        </div>
+
+        {!hasProducts && <span className="field__hint">Primero agregá un producto/servicio en la pestaña Producto.</span>}
 
         {hasProducts && (
           <Field
             as="select"
-            label="Producto"
+            label="Producto/servicio"
             value={selectedProductId}
             onChange={(e) => setSelectedProductId(e.target.value)}
             disabled={atLimit}
@@ -196,7 +209,7 @@ export default function VideosTab({ business, plan }: BusinessTabProps) {
         <FileInput
           label="Agregar video"
           accept={VIDEO_ACCEPT}
-          hint="Hasta 50 MB."
+          hint="Hasta 20 MB."
           disabled={!hasProducts || atLimit || addBusy}
           onFileSelected={handleAddVideo}
         />

@@ -4,15 +4,15 @@ export type MediaKind = 'logos' | 'products' | 'videos'
 
 const BUCKET = 'eco-media'
 
-const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-const VIDEO_MIME_TYPES = ['video/mp4', 'video/webm', 'video/quicktime']
+const LOGO_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const PRODUCT_IMAGE_MIME_TYPES = ['image/webp', 'image/jpeg', 'image/png', 'image/avif']
+const VIDEO_MIME_TYPES = ['video/mp4']
 
-/** Per-kind max file size, in bytes. Logos and product images are capped below the
- * bucket-wide 50 MB (videos use the full allowance). */
+/** Per-kind max file size, in bytes. */
 export const MEDIA_SIZE_LIMITS_BYTES = {
   logo: 5 * 1024 * 1024,
-  image: 10 * 1024 * 1024,
-  video: 50 * 1024 * 1024,
+  image: 0.3 * 1024 * 1024,
+  video: 20 * 1024 * 1024,
 } as const
 
 function requireClient() {
@@ -45,16 +45,19 @@ export function buildMediaPath(kind: MediaKind, businessId: string, fileName: st
 export function validateMediaFile(kind: MediaKind, file: File): string | null {
   if (kind === 'videos') {
     if (!VIDEO_MIME_TYPES.includes(file.type)) {
-      return 'El video debe ser MP4, WebM o QuickTime.'
+      return 'El video debe ser MP4.'
     }
     if (file.size > MEDIA_SIZE_LIMITS_BYTES.video) {
-      return 'El video no puede superar los 50 MB.'
+      return `El video no puede superar los ${MEDIA_SIZE_LIMITS_BYTES.video / (1024 * 1024)} MB.`
     }
     return null
   }
 
-  if (!IMAGE_MIME_TYPES.includes(file.type)) {
-    return 'La imagen debe ser JPEG, PNG, WebP o GIF.'
+  const allowedImageTypes = kind === 'logos' ? LOGO_IMAGE_MIME_TYPES : PRODUCT_IMAGE_MIME_TYPES
+  if (!allowedImageTypes.includes(file.type)) {
+    return kind === 'logos'
+      ? 'La imagen debe ser JPEG, PNG, WebP o GIF.'
+      : 'La imagen debe ser WebP, JPEG, PNG o AVIF.'
   }
   const maxSizeBytes = kind === 'logos' ? MEDIA_SIZE_LIMITS_BYTES.logo : MEDIA_SIZE_LIMITS_BYTES.image
   if (file.size > maxSizeBytes) {

@@ -19,6 +19,25 @@
   gap: var(--space-4);
 }
 
+.form-subsection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+}
+
+.form-subsection + .form-subsection {
+  border-top: 1px dashed var(--color-gray-200);
+}
+
+.form-subsection__title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
 .field--full-width {
   grid-column: 1 / -1;
 }

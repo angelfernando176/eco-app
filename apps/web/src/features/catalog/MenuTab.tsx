@@ -41,7 +41,7 @@ export default function MenuTab({ business, plan, isAdmin }: BusinessTabProps) {
         }
         setImages(grouped)
       })
-      .catch((err) => setLoadError(err instanceof Error ? err.message : 'No se pudo cargar el menú.'))
+      .catch((err) => setLoadError(err instanceof Error ? err.message : 'No se pudo cargar el producto/servicio.'))
       .finally(() => setLoading(false))
   }
 
@@ -58,7 +58,9 @@ export default function MenuTab({ business, plan, isAdmin }: BusinessTabProps) {
 
   const atLimit = !isUnderLimit(products.length, plan.products)
   const counterLabel =
-    plan.products === null ? `${products.length} productos` : `${products.length} de ${plan.products} productos`
+    plan.products === null
+      ? `${products.length} productos/servicios`
+      : `${products.length} de ${plan.products} productos/servicios`
   const canMarkPrimarySecondary = isAdmin && plan.canMarkPrimarySecondary
 
   function openCreateForm() {
@@ -103,7 +105,7 @@ export default function MenuTab({ business, plan, isAdmin }: BusinessTabProps) {
       closeForm()
       await reload()
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'No se pudo guardar el producto.')
+      setFormError(err instanceof Error ? err.message : 'No se pudo guardar el producto/servicio.')
     } finally {
       setFormBusy(false)
     }
@@ -118,7 +120,7 @@ export default function MenuTab({ business, plan, isAdmin }: BusinessTabProps) {
       setDeletingProduct(null)
       await reload()
     } catch (err) {
-      setDeleteError(err instanceof Error ? err.message : 'No se pudo eliminar el producto.')
+      setDeleteError(err instanceof Error ? err.message : 'No se pudo eliminar el producto/servicio.')
     } finally {
       setDeleteBusy(false)
     }
@@ -129,7 +131,7 @@ export default function MenuTab({ business, plan, isAdmin }: BusinessTabProps) {
       {loading && (
         <div className="stack stack--sm stack--center">
           <span className="spinner spinner--lg" aria-hidden="true" />
-          <p>Cargando menú…</p>
+          <p>Cargando producto/servicio…</p>
         </div>
       )}
 
@@ -140,59 +142,65 @@ export default function MenuTab({ business, plan, isAdmin }: BusinessTabProps) {
           <div className="menu-tab__header">
             <span className="field__hint">{counterLabel}</span>
             <Button type="button" onClick={openCreateForm} disabled={atLimit}>
-              Agregar producto
+              Agregar producto/servicio
             </Button>
           </div>
 
           {atLimit && (
             <span className="field__hint">
-              Alcanzaste el límite de {plan.products} producto(s) de tu plan. Eliminá un producto para agregar otro.
+              Alcanzaste el límite de {plan.products} producto(s)/servicio(s) de tu plan. Eliminá un producto/servicio
+              para agregar otro.
             </span>
           )}
 
-          {products.length === 0 && <p>Este negocio todavía no tiene productos.</p>}
+          {products.length === 0 && <p>Este negocio todavía no tiene productos/servicios.</p>}
 
           {products.map((product) => (
             <div key={product.id} className="card product-card">
-              <div className="product-card__header">
-                <div className="stack stack--sm">
-                  <h3 className="product-card__name">{product.name}</h3>
-                  {(product.isPrimary || product.isSecondary) && (
-                    <div className="cluster">
-                      {product.isPrimary && <span className="badge badge--admin">Principal</span>}
-                      {product.isSecondary && <span className="badge badge--user">Secundario</span>}
-                    </div>
-                  )}
+              <div className="product-card__main">
+                <div className="product-card__header">
+                  <div className="stack stack--sm">
+                    <h3 className="product-card__name">{product.name}</h3>
+                    {(product.isPrimary || product.isSecondary) && (
+                      <div className="cluster">
+                        {product.isPrimary && <span className="badge badge--admin">Principal</span>}
+                        {product.isSecondary && <span className="badge badge--user">Secundario</span>}
+                      </div>
+                    )}
+                  </div>
+                  <span className="product-card__price">{CURRENCY_FORMATTER.format(product.price)}</span>
                 </div>
-                <span className="product-card__price">{CURRENCY_FORMATTER.format(product.price)}</span>
+
+                {product.description && <p className="product-card__description">{product.description}</p>}
+
+                <div className="cluster">
+                  <Button type="button" variant="secondary" onClick={() => openEditForm(product)}>
+                    Editar
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      setDeleteError(null)
+                      setDeletingProduct(product)
+                    }}
+                  >
+                    Eliminar
+                  </Button>
+                </div>
               </div>
 
-              {product.description && <p className="product-card__description">{product.description}</p>}
-
-              <div className="cluster">
-                <Button type="button" variant="secondary" onClick={() => openEditForm(product)}>
-                  Editar
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => {
-                    setDeleteError(null)
-                    setDeletingProduct(product)
-                  }}
-                >
-                  Eliminar
-                </Button>
+              <div className="product-card__images">
+                <h4 className="product-card__section-title">Imágenes</h4>
+                <ProductImages
+                  product={product}
+                  images={images[product.id] ?? []}
+                  canManage={plan.canManageImages}
+                  imagesLimit={plan.imagesPerProduct}
+                  businessId={business.id}
+                  onChanged={() => reloadImagesFor(product.id)}
+                />
               </div>
-
-              <ProductImages
-                product={product}
-                images={images[product.id] ?? []}
-                canManage={plan.canManageImages}
-                imagesLimit={plan.imagesPerProduct}
-                businessId={business.id}
-                onChanged={() => reloadImagesFor(product.id)}
-              />
             </div>
           ))}
 

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, Button, ConfirmDialog, Field, FileInput } from '../../ui'
+import { Alert, Button, ConfirmDialog, Field, FileInput, InfoTooltip } from '../../ui'
 import { isUnderLimit } from '../plan/rules'
 import { addProductImage, deleteProductImage, updateProductImage } from './api'
 import { CATALOG_FIELD_LIMITS, validateImageDescription } from './rules'
@@ -14,7 +14,15 @@ interface ProductImagesProps {
   onChanged: () => void
 }
 
-const IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif'
+const IMAGE_ACCEPT = 'image/webp,image/jpeg,image/png,image/avif'
+const IMAGE_RESTRICTIONS_TOOLTIP = [
+  'Fotos por producto:',
+  'Administrador: 10',
+  'Sin suscripción: 0 (suscribite para habilitar la carga)',
+  'Con suscripción: 7 por producto',
+  'Tamaño máximo: 0.3 MB',
+  'Formatos: WebP, JPEG, PNG, AVIF',
+]
 
 export default function ProductImages({ product, images, canManage, imagesLimit, businessId, onChanged }: ProductImagesProps) {
   const [newDescription, setNewDescription] = useState('')
@@ -196,6 +204,10 @@ export default function ProductImages({ product, images, canManage, imagesLimit,
       )}
 
       <div className="product-images__add">
+        <div className="product-images__add-header">
+          <h5 className="product-images__add-title">Agregar imagen</h5>
+          <InfoTooltip label="Restricciones de carga de imágenes" lines={IMAGE_RESTRICTIONS_TOOLTIP} />
+        </div>
         <Field
           label="Descripción de la nueva imagen"
           value={newDescription}
@@ -206,7 +218,7 @@ export default function ProductImages({ product, images, canManage, imagesLimit,
         />
         <FileInput label="Agregar imagen" accept={IMAGE_ACCEPT} disabled={atLimit || addBusy} onFileSelected={handleAddImage} />
         {atLimit && (
-          <span className="field__hint">Alcanzaste el límite de {imagesLimit} imagen(es) por producto de tu plan.</span>
+          <span className="field__hint">Alcanzaste el límite de {imagesLimit} imagen(es) por producto/servicio de tu plan.</span>
         )}
         {addError && <Alert tone="error">{addError}</Alert>}
       </div>
