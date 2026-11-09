@@ -35,6 +35,9 @@ export interface BusinessAccessDetail {
   tradeName: string
   ruc: string
   phone: string
+  latitude: number
+  longitude: number
+  productId: string | null
   productName: string
   productPrice: number
 }
@@ -46,7 +49,7 @@ export async function getBusinessAccessDetail(businessId: string): Promise<Busin
 
   const { data: business, error: businessError } = await supabase
     .from('businesses')
-    .select('id, trade_name, ruc, phone')
+    .select('id, trade_name, ruc, phone, latitude, longitude')
     .eq('id', businessId)
     .single()
 
@@ -56,7 +59,7 @@ export async function getBusinessAccessDetail(businessId: string): Promise<Busin
 
   const { data: products, error: productError } = await supabase
     .from('products')
-    .select('name, price')
+    .select('id, name, price')
     .eq('business_id', businessId)
     .order('created_at')
     .limit(1)
@@ -72,6 +75,9 @@ export async function getBusinessAccessDetail(businessId: string): Promise<Busin
     tradeName: business.trade_name,
     ruc: business.ruc,
     phone: business.phone,
+    latitude: business.latitude,
+    longitude: business.longitude,
+    productId: product?.id ?? null,
     productName: product?.name ?? '',
     productPrice: product?.price ?? 0,
   }

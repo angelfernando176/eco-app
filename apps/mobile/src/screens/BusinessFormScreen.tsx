@@ -7,6 +7,7 @@ import { crearNegocioPendiente } from '../db/negocio'
 import { obtenerIngreso } from '../db/ingreso'
 import { validateBusinessInput, type BusinessFieldError } from '../services/mobileBusinessLogic'
 import { syncPending } from '../services/sync'
+import { commonStyles } from '../styles/common'
 import { colors, spacing, typography } from '../theme'
 
 export interface BusinessFormScreenProps {
@@ -88,12 +89,12 @@ export function BusinessFormScreen({
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={commonStyles.container} contentContainerStyle={commonStyles.content}>
       <Pressable onPress={onCancel} style={styles.cancel}>
-        <Text style={styles.cancelText}>‹ Cancelar</Text>
+        <Text style={commonStyles.cancelText}>‹ Cancelar</Text>
       </Pressable>
 
-      <Text style={styles.title}>Registrar negocio</Text>
+      <Text style={commonStyles.title}>Registrar negocio</Text>
 
       {aviso ? <Banner variant="error" message={aviso} /> : null}
 
@@ -121,10 +122,10 @@ export function BusinessFormScreen({
       />
 
       <TextField
-        label="Producto principal"
+        label="Producto/servicio principal"
         value={productName}
         onChangeText={setProductName}
-        placeholder="Nombre del producto"
+        placeholder="Nombre del producto/servicio"
         error={errorFor(errors, 'productName')}
       />
 
@@ -162,26 +163,7 @@ export function BusinessFormScreen({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.white,
-  },
-  content: {
-    padding: spacing[6],
-    gap: spacing[3],
-  },
   cancel: {
-    marginBottom: spacing[2],
-  },
-  cancelText: {
-    fontSize: typography.size.base,
-    color: colors.brand[700],
-    fontWeight: typography.weight.medium as '500',
-  },
-  title: {
-    fontSize: typography.size['2xl'],
-    fontWeight: typography.weight.bold as '700',
-    color: colors.brand[700],
     marginBottom: spacing[2],
   },
   readOnlyField: {

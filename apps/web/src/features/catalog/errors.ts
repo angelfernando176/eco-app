@@ -9,12 +9,12 @@ export function mapCatalogError(error: CatalogDbError): Error {
 
   const productLimit = message.match(/product limit exceeded \(max (\d+)\)/)
   if (productLimit) {
-    return new Error(`Alcanzaste el límite de ${productLimit[1]} producto(s) de tu plan.`)
+    return new Error(`Alcanzaste el límite de ${productLimit[1]} producto(s)/servicio(s) de tu plan.`)
   }
 
   const imageLimit = message.match(/product image limit exceeded \(max (\d+)\)/)
   if (imageLimit) {
-    return new Error(`Alcanzaste el límite de ${imageLimit[1]} imagen(es) por producto de tu plan.`)
+    return new Error(`Alcanzaste el límite de ${imageLimit[1]} imagen(es) por producto/servicio de tu plan.`)
   }
 
   const videoLimit = message.match(/video limit exceeded per business \(max (\d+)\)/)
@@ -28,7 +28,7 @@ export function mapCatalogError(error: CatalogDbError): Error {
   }
 
   if (message.includes('only an administrator can mark primary/secondary products')) {
-    return new Error('Solo un administrador puede marcar productos como principal/secundario.')
+    return new Error('Solo un administrador puede marcar productos/servicios como principal/secundario.')
   }
 
   if (error.code === '23505') {

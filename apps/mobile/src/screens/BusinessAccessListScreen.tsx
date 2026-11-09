@@ -6,6 +6,7 @@ import { SectionState } from '../components/SectionState'
 import { TextField } from '../components/TextField'
 import { listBusinessesAdmin } from '../services/adminBusinessApi'
 import { listOwnerBusinesses, type OwnerBusinessSummary } from '../services/businessAccess'
+import { commonStyles } from '../styles/common'
 import { colors, spacing, typography } from '../theme'
 
 export interface BusinessAccessListScreenProps {
@@ -72,15 +73,15 @@ export function BusinessAccessListScreen({ role, ownerId, onSelect, onAgregar }:
   }
 
   return (
-    <View style={styles.container}>
+    <View style={commonStyles.container}>
       <FlatList
         data={!loading && !error ? businesses : []}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
           <View style={styles.header}>
             <View style={styles.titleRow}>
-              <Text style={styles.title}>Negocios</Text>
-              {onAgregar ? <Button title="Agregar" variant="secondary" onPress={onAgregar} /> : null}
+              <Text style={[commonStyles.title, styles.titleNoMargin]}>Negocios</Text>
+              {onAgregar ? <Button title="Agregar" onPress={onAgregar} /> : null}
             </View>
             {role === 'admin' ? (
               <TextField label="Buscar negocio" value={query} onChangeText={setQuery} placeholder="Nombre del negocio" />
@@ -111,10 +112,6 @@ export function BusinessAccessListScreen({ role, ownerId, onSelect, onAgregar }:
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.white,
-  },
   listContent: {
     padding: spacing[6],
     gap: spacing[3],
@@ -127,10 +124,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  title: {
-    fontSize: typography.size['2xl'],
-    fontWeight: typography.weight.bold as '700',
-    color: colors.brand[700],
+  titleNoMargin: {
+    marginBottom: 0,
   },
   resultCard: {
     flexDirection: 'row',

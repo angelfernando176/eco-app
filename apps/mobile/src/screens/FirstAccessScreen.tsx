@@ -6,6 +6,7 @@ import { TextField } from '../components/TextField'
 import { AGE_RANGES, GENDERS } from '../constants'
 import { getDeviceRegisteredEmail } from '../native/deviceEmail'
 import { registerOrLogin } from '../services/accountAuth'
+import { commonStyles } from '../styles/common'
 import { colors, spacing, typography } from '../theme'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -77,7 +78,7 @@ export function FirstAccessScreen({ onSubmit }: FirstAccessScreenProps) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[commonStyles.container, styles.centered]}>
       <Text style={styles.title}>ECO</Text>
       <TextField label="Nombre" value={nombre} onChangeText={setNombre} placeholder="Tu nombre" />
       <Text style={styles.label}>Rango de edad</Text>
@@ -127,11 +128,9 @@ export function FirstAccessScreen({ onSubmit }: FirstAccessScreenProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  centered: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.white,
     padding: spacing[6],
   },
   title: {

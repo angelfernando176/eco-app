@@ -41,7 +41,7 @@ export function MenuTab({ businessId }: MenuTabProps) {
           loading={status === 'loading'}
           errorMessage={status === 'error' ? errorMessage : null}
           onRetry={load}
-          emptyMessage={status === 'empty' ? 'Este negocio aún no tiene productos en el menú.' : null}
+          emptyMessage={status === 'empty' ? 'Este negocio aún no tiene productos/servicios.' : null}
         />
       </View>
     )

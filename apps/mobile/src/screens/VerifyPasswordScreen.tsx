@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native'
 import { Button } from '../components/Button'
 import { TextField } from '../components/TextField'
 import { verifyAccount } from '../services/accountAuth'
+import { commonStyles } from '../styles/common'
 import { colors, spacing, typography } from '../theme'
 
 export interface VerifyPasswordScreenProps {
@@ -33,8 +34,8 @@ export function VerifyPasswordScreen({ email, onVerified, onCancel }: VerifyPass
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Confirmá tu clave</Text>
+    <View style={[commonStyles.container, styles.centered]}>
+      <Text style={commonStyles.title}>Confirmá tu clave</Text>
       <Text style={styles.email}>{email}</Text>
       <TextField
         label="Clave"
@@ -52,18 +53,10 @@ export function VerifyPasswordScreen({ email, onVerified, onCancel }: VerifyPass
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  centered: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.white,
     padding: spacing[6],
-  },
-  title: {
-    fontSize: typography.size['2xl'],
-    fontWeight: typography.weight.bold as '700',
-    color: colors.brand[700],
-    marginBottom: spacing[2],
   },
   email: {
     fontSize: typography.size.base,

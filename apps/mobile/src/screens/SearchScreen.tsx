@@ -22,6 +22,7 @@ import { searchBusinesses } from '../services/businessSearch'
 import type { BusinessResult } from '../services/businessSearchLogic'
 import { formatDistance, RADIUS_OPTIONS_KM, regionForRadius, type GeoPoint, type RadiusKm } from '../services/geo'
 import { getCurrentPosition } from '../services/location'
+import { commonStyles } from '../styles/common'
 import { colors, radius, spacing, typography } from '../theme'
 
 function formatHora(hour: number, minute: number): string {
@@ -214,7 +215,7 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
       (ciudadConfirmada && callePrincipalConfirmada && calleSecundariaTexto.trim().length > 0))
 
   return (
-    <View style={styles.container}>
+    <View style={commonStyles.container}>
       <FlatList
         data={status === 'results' ? results : []}
         keyExtractor={(item) => item.id}
@@ -361,7 +362,7 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
                       />
                     </>
                   ) : (
-                    <Button title="Agregar hora" variant="ghost" onPress={handleToggleHora} style={styles.quitarHoraButton} />
+                    <Button title="Agregar hora" onPress={handleToggleHora} style={styles.quitarHoraButton} />
                   )}
                 </View>
 
@@ -458,10 +459,6 @@ export function SearchScreen({ nombre, onSelectBusiness }: SearchScreenProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.white,
-  },
   listContent: {
     padding: spacing[6],
     gap: spacing[3],

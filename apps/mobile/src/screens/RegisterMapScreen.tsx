@@ -6,6 +6,7 @@ import { Button } from '../components/Button'
 import { googleMapsApiKey } from '../config'
 import { getCurrentPosition } from '../services/location'
 import type { GeoPoint } from '../services/geo'
+import { commonStyles } from '../styles/common'
 import { colors, radius, spacing, typography } from '../theme'
 
 export interface RegisterMapScreenProps {
@@ -40,9 +41,9 @@ export function RegisterMapScreen({ onIniciarRegistro, onCancel }: RegisterMapSc
   }
 
   return (
-    <View style={styles.container}>
+    <View style={commonStyles.container}>
       <Pressable onPress={onCancel} style={styles.cancel}>
-        <Text style={styles.cancelText}>‹ Cancelar</Text>
+        <Text style={commonStyles.cancelText}>‹ Cancelar</Text>
       </Pressable>
 
       {status === 'loading' ? (
@@ -87,17 +88,8 @@ export function RegisterMapScreen({ onIniciarRegistro, onCancel }: RegisterMapSc
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.white,
-  },
   cancel: {
     padding: spacing[4],
-  },
-  cancelText: {
-    fontSize: typography.size.base,
-    color: colors.brand[700],
-    fontWeight: typography.weight.medium as '500',
   },
   center: {
     flex: 1,

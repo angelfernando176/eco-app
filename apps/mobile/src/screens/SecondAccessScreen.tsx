@@ -4,6 +4,7 @@ import { Banner } from '../components/Banner'
 import { Button } from '../components/Button'
 import { ecoWebUrl } from '../config'
 import { syncPending } from '../services/sync'
+import { commonStyles } from '../styles/common'
 import { colors, spacing, typography } from '../theme'
 
 export interface SecondAccessScreenProps {
@@ -45,7 +46,7 @@ export function SecondAccessScreen({
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[commonStyles.container, styles.centered]}>
       <Text style={styles.title}>ECO</Text>
       <Text style={styles.welcome}>Hola {nombre}, bienvenido a ECO.</Text>
       {aviso ? <Banner variant="error" message={aviso} /> : null}
@@ -86,11 +87,9 @@ export function SecondAccessScreen({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  centered: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.white,
     padding: spacing[6],
   },
   title: {

@@ -4,6 +4,7 @@ import { Banner } from '../components/Banner'
 import { Button } from '../components/Button'
 import { TextField } from '../components/TextField'
 import { signInAsAdmin } from '../services/adminAuth'
+import { commonStyles } from '../styles/common'
 import { colors, spacing, typography } from '../theme'
 
 export interface AdminLoginScreenProps {
@@ -30,7 +31,7 @@ export function AdminLoginScreen({ onSuccess, onCancel }: AdminLoginScreenProps)
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[commonStyles.container, styles.centered]}>
       <Text style={styles.title}>Acceso administrador</Text>
 
       {error ? <Banner variant="error" message={error} /> : null}
@@ -56,11 +57,9 @@ export function AdminLoginScreen({ onSuccess, onCancel }: AdminLoginScreenProps)
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  centered: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.white,
     padding: spacing[6],
     gap: spacing[3],
   },

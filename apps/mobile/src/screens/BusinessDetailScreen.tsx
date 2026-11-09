@@ -8,6 +8,7 @@ import { RankingTab } from './business/RankingTab'
 import { RateTab } from './business/RateTab'
 import { VideosTab } from './business/VideosTab'
 import type { BusinessResult } from '../services/businessSearchLogic'
+import { commonStyles } from '../styles/common'
 import { colors, spacing, typography } from '../theme'
 
 export interface BusinessDetailScreenProps {
@@ -21,7 +22,7 @@ const TABS: ReadonlyArray<{ key: TabKey; label: string }> = [
   { key: 'mapa', label: 'Mapa' },
   { key: 'videos', label: 'Videos' },
   { key: 'ranking', label: 'Ranking' },
-  { key: 'menu', label: 'Menú' },
+  { key: 'menu', label: 'Producto' },
   { key: 'contacto', label: 'Contacto' },
   { key: 'calificar', label: 'Calificar' },
 ]
@@ -43,7 +44,7 @@ export function BusinessDetailScreen({ business, onBack }: BusinessDetailScreenP
   }
 
   return (
-    <View style={styles.container}>
+    <View style={commonStyles.container}>
       <Text style={styles.businessName} numberOfLines={1}>
         {business.tradeName}
       </Text>
@@ -96,10 +97,6 @@ function hiddenStyle(hidden: boolean) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.white,
-  },
   businessName: {
     textAlign: 'center',
     fontSize: typography.size.base,

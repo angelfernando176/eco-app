@@ -59,7 +59,7 @@ export function validateBusinessInput(input: BusinessFormInput | BusinessEditInp
 
   const productName = input.productName.trim()
   if (productName.length < 1 || productName.length > 100) {
-    errors.push({ field: 'productName', message: 'El nombre del producto debe tener entre 1 y 100 caracteres.' })
+    errors.push({ field: 'productName', message: 'El nombre del producto/servicio debe tener entre 1 y 100 caracteres.' })
   }
 
   if (!Number.isFinite(input.productPrice) || input.productPrice < 0) {

@@ -10,7 +10,8 @@ import {
   validateBusinessInput,
   type BusinessFieldError,
 } from '../services/mobileBusinessLogic'
-import { colors, spacing, typography } from '../theme'
+import { commonStyles } from '../styles/common'
+import { spacing } from '../theme'
 
 export interface BusinessAccessCreateScreenProps {
   ownerId: string
@@ -67,12 +68,12 @@ export function BusinessAccessCreateScreen({ ownerId, coords, onSaved, onCancel 
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={commonStyles.container} contentContainerStyle={styles.content}>
       <Pressable onPress={onCancel} style={styles.cancel}>
-        <Text style={styles.cancelText}>‹ Cancelar</Text>
+        <Text style={commonStyles.cancelText}>‹ Cancelar</Text>
       </Pressable>
 
-      <Text style={styles.title}>Agregar negocio</Text>
+      <Text style={[commonStyles.title, styles.titleOverride]}>Agregar negocio</Text>
 
       {aviso ? <Banner variant="error" message={aviso} /> : null}
 
@@ -100,7 +101,7 @@ export function BusinessAccessCreateScreen({ ownerId, coords, onSaved, onCancel 
         style={styles.field}
       />
       <TextField
-        label="Producto principal"
+        label="Producto/servicio principal"
         value={productName}
         onChangeText={setProductName}
         error={errorFor(errors, 'productName')}
@@ -121,25 +122,13 @@ export function BusinessAccessCreateScreen({ ownerId, coords, onSaved, onCancel 
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.white,
-  },
   content: {
     padding: spacing[6],
   },
   cancel: {
     marginBottom: spacing[2],
   },
-  cancelText: {
-    fontSize: typography.size.base,
-    color: colors.brand[700],
-    fontWeight: typography.weight.medium as '500',
-  },
-  title: {
-    fontSize: typography.size['2xl'],
-    fontWeight: typography.weight.bold as '700',
-    color: colors.brand[700],
+  titleOverride: {
     marginBottom: spacing[4],
   },
   field: {

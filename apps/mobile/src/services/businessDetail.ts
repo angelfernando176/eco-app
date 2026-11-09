@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { mapReadErrorToSpanish } from './mobileContentLogic'
 import {
   mapProducts,
   mapRatingSummary,
@@ -27,7 +28,7 @@ export async function fetchMenu(businessId: string): Promise<Product[]> {
     .eq('business_id', businessId)
 
   if (productError) {
-    throw new Error(`No se pudo cargar el menú: ${productError.message}`)
+    throw mapReadErrorToSpanish('No se pudo cargar el menú', productError)
   }
 
   const products = (productRows ?? []) as ProductRow[]
@@ -42,7 +43,7 @@ export async function fetchMenu(businessId: string): Promise<Product[]> {
       .order('position', { ascending: true })
 
     if (imageError) {
-      throw new Error(`No se pudieron cargar las imágenes del menú: ${imageError.message}`)
+      throw mapReadErrorToSpanish('No se pudieron cargar las imágenes del menú', imageError)
     }
     imageRows = (data ?? []) as ProductImageRow[]
   }
@@ -62,7 +63,7 @@ export async function fetchVideos(businessId: string): Promise<Video[]> {
     .order('created_at', { ascending: false })
 
   if (videoError) {
-    throw new Error(`No se pudieron cargar los videos: ${videoError.message}`)
+    throw mapReadErrorToSpanish('No se pudieron cargar los videos', videoError)
   }
 
   const videos = (videoRows ?? []) as VideoRow[]
@@ -76,7 +77,7 @@ export async function fetchVideos(businessId: string): Promise<Video[]> {
       .in('id', productIds)
 
     if (productError) {
-      throw new Error(`No se pudieron cargar los videos: ${productError.message}`)
+      throw mapReadErrorToSpanish('No se pudieron cargar los videos', productError)
     }
 
     productNameById = new Map((productRows ?? []).map((row: { id: string; name: string }) => [row.id, row.name]))
@@ -92,7 +93,7 @@ export async function fetchRatingSummary(businessId: string): Promise<RatingSumm
 
   const { data, error } = await supabase.rpc('business_rating_summary', { p_business_id: businessId })
   if (error) {
-    throw new Error(`No se pudo cargar el resumen de calificaciones: ${error.message}`)
+    throw mapReadErrorToSpanish('No se pudo cargar el resumen de calificaciones', error)
   }
 
   const row = Array.isArray(data) ? data[0] : data
@@ -116,7 +117,7 @@ export async function fetchRatings({ businessId, page }: FetchRatingsInput): Pro
   })
 
   if (error) {
-    throw new Error(`No se pudieron cargar las calificaciones: ${error.message}`)
+    throw mapReadErrorToSpanish('No se pudieron cargar las calificaciones', error)
   }
 
   return mapRatings((data ?? []) as RatingRow[])

@@ -1,6 +1,6 @@
 import { FunctionsHttpError } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
-import { mapUploadErrorToSpanish } from './mobileContentLogic'
+import { mapReadErrorToSpanish, mapUploadErrorToSpanish } from './mobileContentLogic'
 
 const NOT_CONFIGURED_MESSAGE = 'La app no está configurada para conectarse a Supabase.'
 
@@ -28,7 +28,7 @@ export async function fetchMainProductId(businessRemoteId: string): Promise<stri
     .limit(1)
     .maybeSingle()
 
-  if (error) throw new Error(`No se pudo buscar el producto principal: ${error.message}`)
+  if (error) throw mapReadErrorToSpanish('No se pudo buscar el producto/servicio principal', error)
   return data?.id ?? null
 }
 
@@ -47,7 +47,7 @@ export async function fetchPhotos(productId: string): Promise<MobilePhoto[]> {
     .eq('product_id', productId)
     .order('position', { ascending: true })
 
-  if (error) throw new Error(`No se pudieron cargar las fotos: ${error.message}`)
+  if (error) throw mapReadErrorToSpanish('No se pudieron cargar las fotos', error)
   return (data ?? []).map((row) => ({ id: row.id, url: row.url, description: row.description ?? '' }))
 }
 
@@ -65,7 +65,7 @@ export async function fetchVideos(businessId: string): Promise<MobileVideo[]> {
     .eq('business_id', businessId)
     .order('created_at', { ascending: false })
 
-  if (error) throw new Error(`No se pudieron cargar los videos: ${error.message}`)
+  if (error) throw mapReadErrorToSpanish('No se pudieron cargar los videos', error)
   return (data ?? []).map((row) => ({ id: row.id, url: row.url }))
 }
 
@@ -79,7 +79,7 @@ export async function fetchSkills(businessId: string): Promise<MobileSkill[]> {
 
   const { data, error } = await supabase.from('skills').select('id, name').eq('business_id', businessId)
 
-  if (error) throw new Error(`No se pudieron cargar los skills: ${error.message}`)
+  if (error) throw mapReadErrorToSpanish('No se pudieron cargar los skills', error)
   return (data ?? []) as MobileSkill[]
 }
 

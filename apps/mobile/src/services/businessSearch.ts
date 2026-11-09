@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase'
 import { boundingBox, type GeoPoint } from './geo'
+import { mapReadErrorToSpanish } from './mobileContentLogic'
 import { mergeBusinessResults, sanitizeSearchTerm, type BusinessResult, type BusinessRow } from './businessSearchLogic'
 
 const BUSINESS_COLUMNS =
@@ -35,7 +36,7 @@ export async function searchBusinesses({ center, radiusKm, term }: SearchBusines
 
   const { data: byNameRows, error: byNameError } = await byNameQuery
   if (byNameError) {
-    throw new Error(`No se pudo buscar negocios: ${byNameError.message}`)
+    throw mapReadErrorToSpanish('No se pudo buscar negocios', byNameError)
   }
 
   const rowSets: BusinessRow[][] = [(byNameRows ?? []) as BusinessRow[]]
@@ -48,7 +49,7 @@ export async function searchBusinesses({ center, radiusKm, term }: SearchBusines
       .limit(ROW_LIMIT)
 
     if (skillError) {
-      throw new Error(`No se pudo buscar por palabra clave: ${skillError.message}`)
+      throw mapReadErrorToSpanish('No se pudo buscar por palabra clave', skillError)
     }
 
     const businessIds = [...new Set((skillRows ?? []).map((row) => row.business_id as string))]
@@ -65,7 +66,7 @@ export async function searchBusinesses({ center, radiusKm, term }: SearchBusines
         .limit(ROW_LIMIT)
 
       if (bySkillError) {
-        throw new Error(`No se pudo buscar por palabra clave: ${bySkillError.message}`)
+        throw mapReadErrorToSpanish('No se pudo buscar por palabra clave', bySkillError)
       }
 
       rowSets.push((bySkillRows ?? []) as BusinessRow[])
@@ -78,7 +79,7 @@ export async function searchBusinesses({ center, radiusKm, term }: SearchBusines
       .limit(ROW_LIMIT)
 
     if (productError) {
-      throw new Error(`No se pudo buscar por producto: ${productError.message}`)
+      throw mapReadErrorToSpanish('No se pudo buscar por producto/servicio', productError)
     }
 
     const productBusinessIds = [...new Set((productRows ?? []).map((row) => row.business_id as string))]
@@ -95,7 +96,7 @@ export async function searchBusinesses({ center, radiusKm, term }: SearchBusines
         .limit(ROW_LIMIT)
 
       if (byProductError) {
-        throw new Error(`No se pudo buscar por producto: ${byProductError.message}`)
+        throw mapReadErrorToSpanish('No se pudo buscar por producto/servicio', byProductError)
       }
 
       rowSets.push((byProductRows ?? []) as BusinessRow[])

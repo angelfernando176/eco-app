@@ -78,11 +78,11 @@ export default function ProductForm({ initial, canMarkPrimarySecondary, busy, er
         <div className="cluster">
           <label className="checkbox-field">
             <input type="checkbox" checked={isPrimary} onChange={(e) => setIsPrimary(e.target.checked)} />
-            Producto principal
+            Producto/servicio principal
           </label>
           <label className="checkbox-field">
             <input type="checkbox" checked={isSecondary} onChange={(e) => setIsSecondary(e.target.checked)} />
-            Producto secundario
+            Producto/servicio secundario
           </label>
         </div>
       )}
@@ -90,7 +90,7 @@ export default function ProductForm({ initial, canMarkPrimarySecondary, busy, er
       {error && <Alert tone="error">{error}</Alert>}
 
       <Button type="submit" loading={busy}>
-        {initial ? 'Guardar cambios' : 'Crear producto'}
+        {initial ? 'Guardar cambios' : 'Crear producto/servicio'}
       </Button>
     </form>
   )

@@ -63,7 +63,7 @@ export default function BusinessDetailPage({
     { id: 'info', label: 'Información' },
     {
       id: 'menu',
-      label: 'Menú',
+      label: 'Producto',
       disabled: isCreate,
       disabledHint: isCreate ? CREATE_FIRST_HINT : undefined,
     },
