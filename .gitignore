@@ -42,3 +42,10 @@ Thumbs.db
 # Editor
 .idea/
 .vscode/
+
+# Supabase CLI local state
+supabase/.temp/
+
+# Scratch / personal docs, not project code
+tmp/
+appEcoRequerimiento/

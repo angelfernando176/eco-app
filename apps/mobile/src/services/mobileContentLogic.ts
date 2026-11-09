@@ -39,6 +39,15 @@ export function validateSkillName(name: string): string | null {
   return null
 }
 
+/** Mirrors the exact rule enforced server-side in eco.add_mobile_product (0012). */
+export function validateProductName(name: string): string | null {
+  const trimmed = name.trim()
+  if (trimmed.length < 1 || trimmed.length > 100) {
+    return 'El nombre del producto/servicio debe tener entre 1 y 100 caracteres.'
+  }
+  return null
+}
+
 /**
  * Maps an already-extracted error message (edge function `{ error }` body, RPC
  * error, or raw Error) to Spanish. Pure/sync: the caller is responsible for
@@ -51,10 +60,30 @@ export function mapUploadErrorToSpanish(error: unknown): string {
     return 'Ya alcanzaste el máximo de skills para tu plan.'
   }
 
+  if (message.includes('product limit exceeded')) {
+    return 'Ya alcanzaste el máximo de productos/servicios para tu plan.'
+  }
+
   if (/network|fetch|timeout/i.test(message)) {
     return 'Sin conexión a internet. Intentá nuevamente.'
   }
 
   // The edge function/RPC already returns its own Spanish message; surface it verbatim.
   return message
+}
+
+/**
+ * Maps a caught read-only fetch error (Supabase/Postgres) to a generic Spanish
+ * message. Unlike mapUploadErrorToSpanish, this never interpolates the
+ * underlying error.message into the returned text, since read-only fetches
+ * can surface raw Postgres schema details (table/column/constraint names).
+ */
+export function mapReadErrorToSpanish(context: string, error: unknown): Error {
+  const message = error instanceof Error ? error.message : String(error)
+
+  if (/network|fetch|timeout/i.test(message)) {
+    return new Error('Sin conexión a internet. Intentá nuevamente.')
+  }
+
+  return new Error(`${context}. Intentá nuevamente.`)
 }

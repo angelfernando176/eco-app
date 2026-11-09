@@ -14,9 +14,8 @@ import { initLocalDatabase } from './src/db/database'
 import { obtenerNegocioLocal } from './src/db/negocio'
 import { AppHeader } from './src/components/AppHeader'
 import { BusinessAccessCreateScreen } from './src/screens/BusinessAccessCreateScreen'
-import { BusinessAccessDetailScreen } from './src/screens/BusinessAccessDetailScreen'
 import { BusinessAccessListScreen } from './src/screens/BusinessAccessListScreen'
-import { BusinessAdminEditScreen } from './src/screens/BusinessAdminEditScreen'
+import { BusinessEditScreen } from './src/screens/BusinessEditScreen'
 import { BusinessDetailScreen } from './src/screens/BusinessDetailScreen'
 import { BusinessFormScreen } from './src/screens/BusinessFormScreen'
 import { FirstAccessScreen } from './src/screens/FirstAccessScreen'
@@ -43,8 +42,7 @@ type Fase =
   | 'verificandoAcceso'
   | 'verificarClave'
   | 'listaNegocios'
-  | 'detalleNegocio'
-  | 'editarNegocioAdmin'
+  | 'editarNegocio'
   | 'agregarNegocioMapa'
   | 'agregarNegocioFormulario'
 
@@ -237,7 +235,7 @@ export default function App() {
           ownerId={accesoNegocios.ownerId}
           onSelect={(id) => {
             setNegocioAccesoId(id)
-            setFase('detalleNegocio')
+            setFase('editarNegocio')
           }}
           onAgregar={accesoNegocios.role !== 'none' ? () => setFase('agregarNegocioMapa') : undefined}
         />
@@ -271,25 +269,16 @@ export default function App() {
     )
   }
 
-  if (fase === 'detalleNegocio' && accesoNegocios && negocioAccesoId) {
+  if (fase === 'editarNegocio' && accesoNegocios && negocioAccesoId) {
     return (
       <>
         <AppHeader mode="back" onAction={() => setFase('listaNegocios')} />
-        <BusinessAccessDetailScreen
+        <BusinessEditScreen
           businessId={negocioAccesoId}
           role={accesoNegocios.role}
-          onEditarAdmin={() => setFase('editarNegocioAdmin')}
+          ownerId={accesoNegocios.ownerId}
+          onSaved={() => setFase('listaNegocios')}
         />
-        <StatusBar style="auto" />
-      </>
-    )
-  }
-
-  if (fase === 'editarNegocioAdmin' && accesoNegocios?.role === 'admin' && negocioAccesoId) {
-    return (
-      <>
-        <AppHeader mode="back" onAction={() => setFase('detalleNegocio')} />
-        <BusinessAdminEditScreen businessId={negocioAccesoId} onSaved={() => setFase('detalleNegocio')} />
         <StatusBar style="auto" />
       </>
     )
