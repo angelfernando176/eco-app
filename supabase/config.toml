@@ -1,0 +1,31 @@
+project_id = "jtrrqbnhxxqjcpizjuy"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public", "eco"]
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+# AQUÍ CONFIGURAS TUS FUNCIONES
+[functions.eco-admin-create-user]
+verify_jwt = false
+
+[functions.eco-mobile-media-upload]
+verify_jwt = false
+
+[functions.eco-mobile-verify-account]
+verify_jwt = false
+
+[functions.eco-notify-subscription]
+verify_jwt = false
+
+[functions.eco-request-subscription-activation]
+verify_jwt = false
