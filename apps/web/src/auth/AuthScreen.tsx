@@ -3,14 +3,18 @@ import { supabase } from '../lib/supabase'
 import { Alert, AuthLayout, Button, Field } from '../ui'
 import { AGE_RANGES } from '../features/users/ageRanges'
 
-type View = 'signin' | 'signup' | 'forgot' | 'confirm'
+type View = 'signin' | 'signup' | 'forgot' | 'reset' | 'confirm'
 
 const VIEW_TITLES: Record<View, string> = {
   signin: 'Iniciar sesión',
   signup: 'Crear cuenta',
   forgot: 'Recuperar credenciales',
+  reset: 'Restablecer contraseña',
   confirm: 'Confirmá tu cuenta',
 }
+
+/* Servicio de reseteo con código por correo, ya desplegado en exxasoft (no hay backend propio en Eco). */
+const RESET_API_BASE = import.meta.env.VITE_RESET_API_BASE ?? 'https://exxasoft.com/api/reset'
 
 interface EmailFieldProps {
   value: string
@@ -42,6 +46,9 @@ export default function AuthScreen() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [ageRange, setAgeRange] = useState(AGE_RANGES[0])
+  const [resetCode, setResetCode] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -85,10 +92,51 @@ export default function AuthScreen() {
     setBusy(true)
     setError(null)
     setNotice(null)
-    const { error } = await client.auth.resetPasswordForEmail(email)
-    setBusy(false)
-    if (error) setError(error.message)
-    else setNotice('Te enviamos un enlace para recuperar tus credenciales.')
+    try {
+      const res = await fetch(`${RESET_API_BASE}/solicitar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'No pudimos enviar el código.')
+      setNotice('Si el correo está registrado, recibirás un código para restablecer tu contraseña.')
+      setView('reset')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No pudimos enviar el código. Intentá de nuevo.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleResetConfirm(e: FormEvent) {
+    e.preventDefault()
+    if (newPassword !== newPasswordConfirm) {
+      setError('Las contraseñas no coinciden.')
+      return
+    }
+    setBusy(true)
+    setError(null)
+    setNotice(null)
+    try {
+      const res = await fetch(`${RESET_API_BASE}/confirmar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code: resetCode, newPassword, newPasswordConfirm }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'No pudimos actualizar la contraseña.')
+      setResetCode('')
+      setNewPassword('')
+      setNewPasswordConfirm('')
+      setPassword('')
+      setNotice('Contraseña actualizada. Ingresá con tu nueva contraseña.')
+      setView('signin')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No pudimos actualizar la contraseña. Intentá de nuevo.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   function resetTo(view: View) {
@@ -186,11 +234,56 @@ export default function AuthScreen() {
           <form className="stack" onSubmit={handleForgot}>
             <EmailField value={email} onChange={setEmail} />
             <Button type="submit" block loading={busy}>
-              {busy ? 'Enviando…' : 'Enviar enlace'}
+              {busy ? 'Enviando…' : 'Enviar código'}
             </Button>
             <Button type="button" variant="link" onClick={() => resetTo('signin')}>
               Volver a iniciar sesión
             </Button>
+          </form>
+        )}
+
+        {view === 'reset' && (
+          <form className="stack" onSubmit={handleResetConfirm}>
+            <p>
+              Te enviamos un código a <strong>{email}</strong>. Ingresálo junto con tu nueva contraseña.
+            </p>
+            <Field
+              label="Código recibido por correo"
+              autoComplete="one-time-code"
+              value={resetCode}
+              onChange={(e) => setResetCode(e.target.value)}
+              required
+              maxLength={8}
+            />
+            <Field
+              label="Nueva contraseña"
+              type="password"
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              minLength={6}
+            />
+            <Field
+              label="Confirmá la nueva contraseña"
+              type="password"
+              autoComplete="new-password"
+              value={newPasswordConfirm}
+              onChange={(e) => setNewPasswordConfirm(e.target.value)}
+              required
+              minLength={6}
+            />
+            <Button type="submit" block loading={busy}>
+              {busy ? 'Guardando…' : 'Guardar nueva contraseña'}
+            </Button>
+            <div className="cluster">
+              <Button type="button" variant="link" onClick={() => resetTo('forgot')}>
+                Reenviar código
+              </Button>
+              <Button type="button" variant="link" onClick={() => resetTo('signin')}>
+                Volver a iniciar sesión
+              </Button>
+            </div>
           </form>
         )}
 
